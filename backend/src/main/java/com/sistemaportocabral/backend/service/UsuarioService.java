@@ -29,6 +29,9 @@ public class UsuarioService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuditoriaService auditoriaService;
+
     public List<Usuario> listarTodos() {
         return repository.findAll();
     }
@@ -41,6 +44,28 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
         usuario.setSenha(passwordEncoder.encode(novaSenha));
         repository.save(usuario);
+    }
+
+    /** Troca de senha pelo próprio usuário (exige a senha atual); usada na troca obrigatória do primeiro acesso */
+    public Usuario trocarSenha(String login, String senhaAtual, String novaSenha) {
+        Usuario usuario = autenticar(login, senhaAtual);
+        if (usuario == null) {
+            throw new IllegalArgumentException("Senha atual incorreta.");
+        }
+        if (novaSenha == null || novaSenha.isBlank()) {
+            throw new IllegalArgumentException("A nova senha não pode ser vazia.");
+        }
+        if (passwordEncoder.matches(novaSenha, usuario.getSenha())) {
+            throw new IllegalArgumentException("A nova senha deve ser diferente da senha atual.");
+        }
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuario.setTrocarSenha(false);
+        Usuario salvo = repository.save(usuario);
+
+        String nome = usuario.getPessoa() != null ? usuario.getPessoa().getNome() : usuario.getUsuarioLogin();
+        auditoriaService.registrar(usuario.getId(), nome, "TROCA_SENHA",
+                "Usuário '" + usuario.getUsuarioLogin() + "' trocou a própria senha.");
+        return salvo;
     }
 
     public Usuario atualizarPerfil(Long id, PerfilUsuario perfil) {

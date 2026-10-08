@@ -3,8 +3,11 @@ package com.sistemaportocabral.backend.controller;
 import com.sistemaportocabral.backend.dto.AtualizarPerfilDTO;
 import com.sistemaportocabral.backend.dto.CadastroRequestDTO;
 import com.sistemaportocabral.backend.dto.LoginRequestDTO;
+import com.sistemaportocabral.backend.dto.RecuperacaoSenhaDTO;
 import com.sistemaportocabral.backend.dto.ResetSenhaDTO;
+import com.sistemaportocabral.backend.dto.TrocarSenhaDTO;
 import com.sistemaportocabral.backend.entity.Usuario;
+import com.sistemaportocabral.backend.service.RecuperacaoSenhaService;
 import com.sistemaportocabral.backend.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 public class UsuarioController {
     @Autowired
     private UsuarioService service;
+
+    @Autowired
+    private RecuperacaoSenhaService recuperacaoSenhaService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
@@ -32,6 +38,36 @@ public class UsuarioController {
             return ResponseEntity.status(201).body(criado);
         } catch (Exception e) {
             return ResponseEntity.status(400).body("Erro ao cadastrar: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/trocar-senha")
+    public ResponseEntity<?> trocarSenha(@RequestBody TrocarSenhaDTO dto) {
+        try {
+            return ResponseEntity.ok(service.trocarSenha(dto.getLogin(), dto.getSenhaAtual(), dto.getNovaSenha()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/recuperar-senha/solicitar")
+    public ResponseEntity<?> solicitarRecuperacao(@RequestBody RecuperacaoSenhaDTO dto) {
+        try {
+            recuperacaoSenhaService.solicitar(dto.getIdentificador());
+            // Mesma resposta exista ou não o usuário
+            return ResponseEntity.ok("Se o usuário estiver cadastrado, um código foi enviado para o e-mail dele.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(503).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/recuperar-senha/redefinir")
+    public ResponseEntity<?> redefinirSenha(@RequestBody RecuperacaoSenhaDTO dto) {
+        try {
+            recuperacaoSenhaService.redefinir(dto.getIdentificador(), dto.getCodigo(), dto.getNovaSenha());
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 

@@ -38,6 +38,11 @@
     color: #a05c3a;
 }
 
+.esqueci-link {
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
 h2 {
     margin-bottom: 30px;
 }

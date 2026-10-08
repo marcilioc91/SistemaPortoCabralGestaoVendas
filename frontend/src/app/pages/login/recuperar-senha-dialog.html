@@ -1,0 +1,67 @@
+<h2 mat-dialog-title>Recuperar senha</h2>
+
+<mat-dialog-content>
+    @if (etapa === 'solicitar') {
+    <p class="rec-texto">Informe seu usuário ou o e-mail cadastrado. Enviaremos um código de verificação para o e-mail do
+        cadastro.</p>
+
+    <mat-form-field appearance="outline" class="rec-campo">
+        <mat-label>Usuário ou e-mail</mat-label>
+        <input matInput [(ngModel)]="identificador" name="identificador" autocomplete="username"
+            (keyup.enter)="solicitar()">
+    </mat-form-field>
+    } @else {
+    <p class="rec-aviso">
+        <mat-icon>mark_email_read</mat-icon>
+        <span>{{ aviso }} O código vale por 15 minutos.</span>
+    </p>
+
+    <mat-form-field appearance="outline" class="rec-campo">
+        <mat-label>Código de 6 dígitos</mat-label>
+        <input matInput [(ngModel)]="codigo" name="codigo" inputmode="numeric" maxlength="6"
+            autocomplete="one-time-code">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="rec-campo">
+        <mat-label>Nova senha</mat-label>
+        <input matInput [(ngModel)]="novaSenha" name="novaSenha" [type]="ocultarSenha ? 'password' : 'text'"
+            autocomplete="new-password">
+        <button matSuffix mat-icon-button type="button" (click)="ocultarSenha = !ocultarSenha"
+            aria-label="Mostrar ou ocultar senha">
+            <mat-icon>{{ ocultarSenha ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="rec-campo">
+        <mat-label>Confirmar nova senha</mat-label>
+        <input matInput [(ngModel)]="confirmacaoSenha" name="confirmacaoSenha"
+            [type]="ocultarSenha ? 'password' : 'text'" autocomplete="new-password" (keyup.enter)="redefinir()">
+        @if (confirmacaoSenha && confirmacaoSenha !== novaSenha) {
+        <mat-hint class="rec-hint-erro">As senhas não conferem.</mat-hint>
+        }
+    </mat-form-field>
+
+    <button mat-button type="button" class="rec-reenviar" (click)="voltar()">
+        Não recebeu? Solicitar novo código
+    </button>
+    }
+
+    @if (erro) {
+    <p class="rec-erro">{{ erro }}</p>
+    }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="fechar()">Cancelar</button>
+    @if (etapa === 'solicitar') {
+    <button mat-raised-button color="primary" [disabled]="!identificador.trim() || enviando" (click)="solicitar()">
+        @if (enviando) { <mat-spinner diameter="18" class="rec-spinner"></mat-spinner> }
+        Enviar código
+    </button>
+    } @else {
+    <button mat-raised-button color="primary" [disabled]="!podeRedefinir() || enviando" (click)="redefinir()">
+        @if (enviando) { <mat-spinner diameter="18" class="rec-spinner"></mat-spinner> }
+        Redefinir senha
+    </button>
+    }
+</mat-dialog-actions>

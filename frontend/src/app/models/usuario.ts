@@ -12,6 +12,7 @@ export interface Usuario {
   email: string;
   senha?: string;
   perfil?: 'ADMIN' | 'OPERADOR';
+  trocarSenha?: boolean;
 }
 
 export interface LoginRequest {

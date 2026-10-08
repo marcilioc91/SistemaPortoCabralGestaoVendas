@@ -84,10 +84,23 @@ Thumbs.db
 # ==========================================
 # ARQUIVOS DO PROJETO IGNORADOS
 # ==========================================
-backend/src/main/resources/
+backend/src/main/resources/*
+!backend/src/main/resources/db/
+!backend/src/main/resources/application.properties
 *.zip
 *.7z
 *.sql
+# package-lock.json gerado por npm rodado fora do frontend (o do frontend é versionado)
+/package-lock.json
+backend/package-lock.json
+
+# Banco de dados e configuração local (credenciais) do ambiente de desenvolvimento
+backend/dados/
+*.fdb
+*.FDB
+
+# Scripts de estrutura do banco (Flyway) são versionados
+!backend/src/main/resources/db/migration/*.sql
 Annotations
 novasImplementacoes.md
 Melhorias.md

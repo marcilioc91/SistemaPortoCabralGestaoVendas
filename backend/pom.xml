@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>25</java.version>
         <kotlin.version>2.2.20</kotlin.version>
+		<firebird-embedded.version>5.0.3.0-alpha-1</firebird-embedded.version>
     </properties>
 	<dependencies>
 		<dependency>
@@ -46,10 +47,33 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		<!-- Firebird embarcado: driver Jaybird + biblioteca nativa do Firebird 5 (Windows x64) -->
 		<dependency>
-			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>mssql-jdbc</artifactId>
-			<scope>runtime</scope>
+			<groupId>org.firebirdsql.jdbc</groupId>
+			<artifactId>jaybird</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.firebirdsql.jdbc</groupId>
+			<artifactId>jaybird-native</artifactId>
+			<version>${jaybird.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.firebirdsql.embedded</groupId>
+			<artifactId>jaybird-firebird-embedded-win32-x86-64</artifactId>
+			<version>${firebird-embedded.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-community-dialects</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-firebird</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -59,6 +83,10 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

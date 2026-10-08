@@ -1,5 +1,8 @@
 package com.sistemaportocabral.backend;
 
+import com.sistemaportocabral.backend.config.BancoDadosDiretorio;
+import com.sistemaportocabral.backend.config.PastaDados;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,7 +10,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SistemaPortoCabralApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SistemaPortoCabralApplication.class, args);
+		PastaDados.definirPadraoSeAusente(args, SistemaPortoCabralApplication.class);
+		SpringApplication app = new SpringApplication(SistemaPortoCabralApplication.class);
+		app.addListeners(new BancoDadosDiretorio());
+		var contexto = app.run(args);
+		LoggerFactory.getLogger(SistemaPortoCabralApplication.class)
+				.info("Pasta de dados: {} | Banco de dados: {}",
+						contexto.getEnvironment().getProperty(PastaDados.PROPRIEDADE),
+						contexto.getEnvironment().getProperty("app.db.path"));
 	}
 
 }

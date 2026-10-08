@@ -28,6 +28,18 @@ export class AuthService {
     return this.http.post(this.api + "/cadastro", dados)
   }
 
+  trocarSenha(login: string, senhaAtual: string, novaSenha: string) {
+    return this.http.post<Usuario>(this.api + "/trocar-senha", { login, senhaAtual, novaSenha })
+  }
+
+  solicitarRecuperacaoSenha(identificador: string) {
+    return this.http.post(this.api + "/recuperar-senha/solicitar", { identificador }, { responseType: 'text' })
+  }
+
+  redefinirSenhaComCodigo(identificador: string, codigo: string, novaSenha: string) {
+    return this.http.post(this.api + "/recuperar-senha/redefinir", { identificador, codigo, novaSenha }, { responseType: 'text' })
+  }
+
   setUsuarioLogado(usuario: any) {
     sessionStorage.setItem('usuario', JSON.stringify(usuario));
   }

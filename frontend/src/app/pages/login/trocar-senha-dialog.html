@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>Defina uma nova senha</h2>
+
+<mat-dialog-content>
+    <p class="rec-aviso">
+        <mat-icon>lock_reset</mat-icon>
+        <span>Olá, {{ data.nome }}! Por segurança, troque a senha padrão antes de continuar.</span>
+    </p>
+
+    <mat-form-field appearance="outline" class="rec-campo">
+        <mat-label>Nova senha</mat-label>
+        <input matInput [(ngModel)]="novaSenha" name="novaSenha" [type]="ocultarSenha ? 'password' : 'text'"
+            autocomplete="new-password">
+        <button matSuffix mat-icon-button type="button" (click)="ocultarSenha = !ocultarSenha"
+            aria-label="Mostrar ou ocultar senha">
+            <mat-icon>{{ ocultarSenha ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (novaSenha && novaSenha === data.senhaAtual) {
+        <mat-hint class="rec-hint-erro">A nova senha deve ser diferente da atual.</mat-hint>
+        }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="rec-campo">
+        <mat-label>Confirmar nova senha</mat-label>
+        <input matInput [(ngModel)]="confirmacaoSenha" name="confirmacaoSenha"
+            [type]="ocultarSenha ? 'password' : 'text'" autocomplete="new-password" (keyup.enter)="salvar()">
+        @if (confirmacaoSenha && confirmacaoSenha !== novaSenha) {
+        <mat-hint class="rec-hint-erro">As senhas não conferem.</mat-hint>
+        }
+    </mat-form-field>
+
+    @if (erro) {
+    <p class="rec-erro">{{ erro }}</p>
+    }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancelar()">Sair</button>
+    <button mat-raised-button color="primary" [disabled]="!podeSalvar() || enviando" (click)="salvar()">
+        Salvar e entrar
+    </button>
+</mat-dialog-actions>

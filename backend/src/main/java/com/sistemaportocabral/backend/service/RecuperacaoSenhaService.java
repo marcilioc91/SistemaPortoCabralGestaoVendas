@@ -1,0 +1,165 @@
+package com.sistemaportocabral.backend.service;
+
+import com.sistemaportocabral.backend.entity.RecuperacaoSenha;
+import com.sistemaportocabral.backend.entity.Usuario;
+import com.sistemaportocabral.backend.repository.RecuperacaoSenhaRepository;
+import com.sistemaportocabral.backend.repository.UsuarioRepository;
+import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Service
+public class RecuperacaoSenhaService {
+
+    private static final Logger log = LoggerFactory.getLogger(RecuperacaoSenhaService.class);
+
+    static final int MINUTOS_VALIDADE = 15;
+    static final int MAX_TENTATIVAS = 5;
+    static final int SEGUNDOS_ENTRE_ENVIOS = 60;
+
+    private final SecureRandom random = new SecureRandom();
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private RecuperacaoSenhaRepository repository;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username:}")
+    private String remetente;
+
+    @Value("${app.mail.remetente-nome:Porto Cabral}")
+    private String remetenteNome;
+
+    /**
+     * Gera um código e envia para o e-mail cadastrado. Não informa se o usuário existe:
+     * o chamador sempre recebe a mesma resposta.
+     */
+    @Transactional
+    public void solicitar(String identificador) {
+        if (remetente == null || remetente.isBlank()) {
+            throw new IllegalStateException("O envio de e-mail não está configurado. Procure o administrador do sistema.");
+        }
+
+        Optional<Usuario> encontrado = buscarUsuario(identificador);
+        if (encontrado.isEmpty()) return;
+        Usuario usuario = encontrado.get();
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) return;
+
+        LocalDateTime agora = LocalDateTime.now();
+        boolean enviadoAgoraHaPouco = repository.findFirstByUsuarioAndUsadoFalseOrderByCriadoEmDesc(usuario)
+                .map(r -> r.getCriadoEm().isAfter(agora.minusSeconds(SEGUNDOS_ENTRE_ENVIOS)))
+                .orElse(false);
+        if (enviadoAgoraHaPouco) return;
+
+        // Só o código mais recente vale
+        repository.findByUsuarioAndUsadoFalse(usuario).forEach(r -> r.setUsado(true));
+
+        String codigo = String.format("%06d", random.nextInt(1_000_000));
+        RecuperacaoSenha rec = new RecuperacaoSenha();
+        rec.setUsuario(usuario);
+        rec.setCodigoHash(passwordEncoder.encode(codigo));
+        rec.setCriadoEm(agora);
+        rec.setExpiraEm(agora.plusMinutes(MINUTOS_VALIDADE));
+        repository.save(rec);
+
+        enviarEmail(usuario, codigo);
+
+        auditoriaService.registrar(usuario.getId(), nomeDe(usuario), "SOLICITACAO_RECUPERACAO_SENHA",
+                "Código de recuperação de senha enviado para o e-mail cadastrado do usuário '" + usuario.getUsuarioLogin() + "'.");
+    }
+
+    /** Valida o código e define a nova senha. Tentativas erradas ficam gravadas (sem rollback). */
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
+    public void redefinir(String identificador, String codigo, String novaSenha) {
+        if (novaSenha == null || novaSenha.isBlank()) {
+            throw new IllegalArgumentException("A nova senha não pode ser vazia.");
+        }
+        String erroPadrao = "Código inválido ou expirado.";
+
+        Usuario usuario = buscarUsuario(identificador)
+                .orElseThrow(() -> new IllegalArgumentException(erroPadrao));
+        RecuperacaoSenha rec = repository.findFirstByUsuarioAndUsadoFalseOrderByCriadoEmDesc(usuario)
+                .orElseThrow(() -> new IllegalArgumentException(erroPadrao));
+
+        if (rec.getExpiraEm().isBefore(LocalDateTime.now()) || rec.getTentativas() >= MAX_TENTATIVAS) {
+            rec.setUsado(true);
+            throw new IllegalArgumentException(erroPadrao);
+        }
+
+        String codigoLimpo = codigo == null ? "" : codigo.replaceAll("\\D", "");
+        if (!passwordEncoder.matches(codigoLimpo, rec.getCodigoHash())) {
+            rec.setTentativas(rec.getTentativas() + 1);
+            if (rec.getTentativas() >= MAX_TENTATIVAS) {
+                rec.setUsado(true);
+                throw new IllegalArgumentException("Código incorreto. Limite de tentativas atingido: solicite um novo código.");
+            }
+            throw new IllegalArgumentException("Código incorreto. Tentativas restantes: " + (MAX_TENTATIVAS - rec.getTentativas()) + ".");
+        }
+
+        rec.setUsado(true);
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
+
+        auditoriaService.registrar(usuario.getId(), nomeDe(usuario), "RECUPERACAO_SENHA",
+                "Senha do usuário '" + usuario.getUsuarioLogin() + "' redefinida via código enviado por e-mail.");
+    }
+
+    private Optional<Usuario> buscarUsuario(String identificador) {
+        if (identificador == null || identificador.isBlank()) return Optional.empty();
+        String valor = identificador.trim();
+        return valor.contains("@")
+                ? usuarioRepository.findByEmail(valor)
+                : usuarioRepository.findByUsuarioLogin(valor);
+    }
+
+    private void enviarEmail(Usuario usuario, String codigo) {
+        try {
+            MimeMessage mensagem = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensagem, "UTF-8");
+            helper.setFrom(remetente, remetenteNome);
+            helper.setTo(usuario.getEmail());
+            helper.setSubject("Porto Cabral - Código de recuperação de senha");
+            helper.setText("""
+                    Olá, %s!
+
+                    Recebemos um pedido para redefinir a senha do usuário "%s" no sistema Porto Cabral.
+
+                    Seu código de verificação é: %s
+
+                    O código é válido por %d minutos e só pode ser usado uma vez.
+                    Se você não fez esse pedido, ignore este e-mail: sua senha continua a mesma.
+                    """.formatted(nomeDe(usuario), usuario.getUsuarioLogin(), codigo, MINUTOS_VALIDADE));
+            mailSender.send(mensagem);
+        } catch (Exception e) {
+            log.error("Falha ao enviar e-mail de recuperação de senha para o usuário {}", usuario.getUsuarioLogin(), e);
+            throw new IllegalStateException("Não foi possível enviar o e-mail. Tente novamente mais tarde.");
+        }
+    }
+
+    private String nomeDe(Usuario usuario) {
+        return usuario.getPessoa() != null && usuario.getPessoa().getNome() != null
+                ? usuario.getPessoa().getNome()
+                : usuario.getUsuarioLogin();
+    }
+}

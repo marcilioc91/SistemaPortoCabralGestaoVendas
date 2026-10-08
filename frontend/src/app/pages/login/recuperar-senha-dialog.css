@@ -1,0 +1,39 @@
+.rec-texto {
+  margin: 0 0 16px;
+  color: #555;
+}
+
+.rec-campo {
+  width: 100%;
+}
+
+.rec-aviso {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(46, 125, 50, 0.08);
+  color: #2e7d32;
+}
+
+.rec-hint-erro,
+.rec-erro {
+  color: #d32f2f;
+}
+
+.rec-erro {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+
+.rec-reenviar {
+  padding-left: 0;
+}
+
+.rec-spinner {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}

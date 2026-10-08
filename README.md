@@ -12,7 +12,7 @@ Sistema web e desktop para gerenciamento de vendas de cantina, com controle de c
 | UI Components | Angular Material 21.2 + Bootstrap 5.3.8 |
 | Backend | Java 25 + Spring Boot 4.0.4 |
 | ORM | Spring Data JPA + Hibernate |
-| Banco de dados | SQL Server |
+| Banco de dados | Firebird 5 embarcado (Jaybird 6) + Flyway |
 | Build | Maven (backend) · Angular CLI (frontend) |
 | Desktop | Electron 41.5 + NSIS (Windows installer) |
 | Utilitários | Lombok · ngx-mask · BCryptPasswordEncoder |
@@ -30,7 +30,7 @@ Spring Boot (Backend)
         ↓
 JPA / Hibernate
         ↓
-SQL Server
+Firebird 5 (embarcado, arquivo .fdb)
 ```
 
 ---
@@ -141,6 +141,8 @@ src/app/
 |---|---|---|---|
 | POST | `/auth/login` | Autenticar usuário | Todos |
 | POST | `/auth/cadastro` | Cadastrar novo usuário | Todos |
+| POST | `/auth/recuperar-senha/solicitar` | Enviar código de recuperação para o e-mail cadastrado (`identificador`: login ou e-mail) | Todos |
+| POST | `/auth/recuperar-senha/redefinir` | Redefinir senha com o código (`identificador`, `codigo`, `novaSenha`) | Todos |
 | GET | `/auth/usuarios` | Listar usuários | ADMIN |
 | PATCH | `/auth/usuarios/{id}/reset-senha` | Redefinir senha | ADMIN |
 | PATCH | `/auth/usuarios/{id}/perfil` | Alterar perfil | ADMIN |
@@ -184,11 +186,40 @@ src/app/
 
 ## Banco de Dados
 
+O banco é um **Firebird 5 embarcado**: roda dentro do próprio backend, sem instalação de servidor.
+A biblioteca nativa do Firebird vem como dependência Maven (`jaybird-firebird-embedded-win32-x86-64`), então o backend só roda em **Windows x64**.
+
+- **Pasta de dados** (banco `PORTOCABRAL.FDB` + `config.properties`), definida em `PastaDados.java`:
+  - **Desenvolvimento:** `backend/dados/`, dentro do projeto (ignorada pelo Git).
+  - **Sistema instalado:** `C:\PortoCabral\dados`, fora da pasta do programa, então atualizações e desinstalação não apagam o banco. O instalador cria a pasta e dá permissão de escrita ao grupo Usuários (`frontend/installer/installer.nsh`).
+  - Outro local: `--app.dados.dir=C:/outra/pasta` ou variável de ambiente `APP_DADOS_DIR` (só o arquivo do banco: `--app.db.path` / `APP_DB_PATH`).
+  - O banco é criado automaticamente na primeira execução (UTF8, collation `UNICODE_CI`), e o caminho em uso aparece no log ao iniciar (`Pasta de dados: ... | Banco de dados: ...`).
+- **Estrutura:** versionada com Flyway em `backend/src/main/resources/db/migration`. Toda alteração de tabela deve virar um novo script `V<n>__descricao.sql`; nunca altere um script já aplicado.
+- **Acesso exclusivo:** no modo embarcado, só o processo do backend abre o arquivo. Para inspecionar o banco com uma ferramenta externa (ex.: DBeaver, FlameRobin), pare o backend antes.
+- **Usuário padrão:** toda instalação já vem com o administrador **`admin` / senha `admin`** (script `V3__usuario_admin_padrao.sql`). No primeiro login o sistema **obriga a troca da senha** antes de liberar o acesso (coluna `USUARIO.TROCAR_SENHA`, endpoint `POST /auth/trocar-senha`). Novos cadastros feitos pela tela de login entram como `OPERADOR`.
+- **Backup:** pare o sistema e copie o arquivo `PORTOCABRAL.FDB` da pasta de dados.
+
+### Configuração local (fora do Git)
+
+Credenciais e ajustes por máquina ficam em `config.properties`, na pasta de dados (mesma pasta do banco), carregado automaticamente se existir.
+Modelo com instruções: [`backend/config.exemplo.properties`](backend/config.exemplo.properties). Outro caminho: variável de ambiente `APP_CONFIG_PATH`.
+
+### Recuperação de senha por e-mail
+
+Na tela de login, **"Esqueci minha senha"** → informar usuário ou e-mail → o sistema envia um **código de 6 dígitos** para o e-mail cadastrado → informar o código e a nova senha.
+
+- Código válido por **15 minutos**, de uso único, guardado como hash BCrypt (tabela `RECUPERACAO_SENHA`).
+- Máximo de **5 tentativas** por código; novo envio só após 60 segundos; pedir um novo código invalida o anterior.
+- A resposta é a mesma exista ou não o usuário (não revela quem está cadastrado).
+- Pedido e redefinição ficam registrados na auditoria.
+- Envio via **Gmail** (`smtp.gmail.com:587`, STARTTLS) com *senha de app*: preencher `spring.mail.username` e `spring.mail.password` no `config.properties`. Sem essas credenciais, a tela informa que o envio não está configurado.
+- Requer internet na máquina no momento do envio.
+
 ### Diagrama simplificado
 
 ```
 PESSOA ──────┬── USUARIO
-             └── CLIENTE ── VENDA ── VENDA_ITEM ── PRODUTO
+             └── CLIENTE ── VENDA ── VENDA_ITEM ── PRODUTO ── CATEGORIA
                                  └── AUDITORIA_LOG
 ```
 
@@ -199,9 +230,11 @@ PESSOA ──────┬── USUARIO
 | `PESSOA` | id, nome, cpf (unique), telefone |
 | `USUARIO` | id, pessoa_id, usuario_login, email, senha (BCrypt), perfil, data_criacao |
 | `CLIENTE` | id, pessoa_id, obs |
-| `PRODUTO` | id, nome, preco, preco_custo, estoque |
+| `CATEGORIA` | id, nome |
+| `PRODUTO` | id, nome, preco, preco_custo, estoque, categoria_id |
 | `VENDA` | id, cliente_id, usuario_id, forma_pagamento, valor_pago, data_venda |
 | `VENDA_ITEM` | id, venda_id, produto_id, quantidade, preco_unitario |
+| `RECUPERACAO_SENHA` | id, usuario_id, codigo_hash, criado_em, expira_em, tentativas, usado |
 | `AUDITORIA_LOG` | id, usuario_id, usuario_nome, tipo_operacao, descricao, data_hora |
 
 ---

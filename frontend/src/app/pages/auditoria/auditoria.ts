@@ -152,6 +152,9 @@ export class Auditoria implements OnInit {
       INCLUSAO_CATEGORIA: 'Incl. Categoria',
       ALTERACAO_CATEGORIA: 'Alt. Categoria',
       EXCLUSAO_CATEGORIA: 'Excl. Categoria',
+      SOLICITACAO_RECUPERACAO_SENHA: 'Pedido Rec. Senha',
+      RECUPERACAO_SENHA: 'Rec. Senha',
+      TROCA_SENHA: 'Troca Senha',
     };
     return mapa[tipo] ?? tipo;
   }

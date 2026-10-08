@@ -34,4 +34,8 @@ public class Usuario {
 
     @CreationTimestamp
     private LocalDateTime data_criacao;
+
+    /** Quando true, o usuário precisa definir uma nova senha antes de usar o sistema */
+    @Column(name = "TROCAR_SENHA", nullable = false)
+    private Boolean trocarSenha = false;
 }
