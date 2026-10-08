@@ -96,6 +96,8 @@ backend/package-lock.json
 
 # Banco de dados e configuração local (credenciais) do ambiente de desenvolvimento
 backend/dados/
+# Saída da ferramenta de migração SQL Server -> Firebird (migrar-mssql.bat)
+/migracao/
 *.fdb
 *.FDB
 

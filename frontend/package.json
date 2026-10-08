@@ -1,6 +1,6 @@
 {
   "name": "porto-cabral-frontend",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Frontend do Sistema Porto Cabral",
   "main": "main.js",
   "scripts": {

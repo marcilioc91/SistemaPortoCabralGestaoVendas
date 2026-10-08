@@ -18,7 +18,8 @@ function startBackend() {
   console.log(`Usando Java em: ${javaExec}`);
 
   if (fs.existsSync(jarPath) && fs.existsSync(javaExec)) {
-    javaProcess = spawn(javaExec, ['-jar', jarPath]);
+    // --enable-native-access: o driver do Firebird embarcado (JNA) carrega DLLs nativas (evita aviso/bloqueio no Java 25+)
+    javaProcess = spawn(javaExec, ['--enable-native-access=ALL-UNNAMED', '-jar', jarPath]);
 
     javaProcess.stdout.on('data', (data) => console.log(`Java: ${data}`));
     javaProcess.stderr.on('data', (data) => console.error(`Java Error: ${data}`));
