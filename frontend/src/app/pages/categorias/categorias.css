@@ -1,10 +1,10 @@
-.produtos-container {
+.categorias-container {
   padding: 32px;
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
-.produtos-header {
+.categorias-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -16,29 +16,18 @@
   gap: 12px;
 }
 
-.produtos-tabela {
+.categorias-tabela {
   width: 100%;
+}
+
+.acoes-cell {
+  text-align: right;
 }
 
 .sem-dados {
   text-align: center;
   color: #888;
   margin-top: 40px;
-}
-
-.estoque-baixo {
-  color: #f57c00;
-  font-weight: 600;
-}
-
-.estoque-zero {
-  color: #d32f2f;
-  font-weight: 600;
-}
-
-.sem-categoria {
-  color: #888;
-  font-style: italic;
 }
 
 .uppercase {

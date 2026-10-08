@@ -84,3 +84,8 @@
   border-top: 2px solid #bcaaa4;
   font-size: 0.95rem;
 }
+
+.sem-categoria {
+  color: #888;
+  font-style: italic;
+}

@@ -105,7 +105,8 @@ public class VendaService {
             for (VendaItem vi : v.getItens()) {
                 Long produtoId = vi.getProduto().getId();
                 RelatorioInventarioItemDTO dto = mapa.computeIfAbsent(produtoId,
-                        k -> new RelatorioInventarioItemDTO(vi.getProduto().getNome()));
+                        k -> new RelatorioInventarioItemDTO(vi.getProduto().getNome(),
+                                vi.getProduto().getCategoria() != null ? vi.getProduto().getCategoria().getNome() : null));
 
                 BigDecimal receita = vi.getPrecoUnitario()
                         .multiply(BigDecimal.valueOf(vi.getQuantidade()));
@@ -122,7 +123,9 @@ public class VendaService {
 
         List<RelatorioInventarioItemDTO> resultado = new ArrayList<>(mapa.values());
         resultado.forEach(dto -> dto.setLucro(dto.getTotalReceita().subtract(dto.getTotalCusto())));
-        resultado.sort(Comparator.comparing(RelatorioInventarioItemDTO::getNomeProduto));
+        resultado.sort(Comparator
+                .comparing(RelatorioInventarioItemDTO::getNomeCategoria, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                .thenComparing(RelatorioInventarioItemDTO::getNomeProduto, String.CASE_INSENSITIVE_ORDER));
 
         return resultado;
     }

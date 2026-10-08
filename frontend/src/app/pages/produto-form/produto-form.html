@@ -32,6 +32,13 @@
       <td mat-cell *matCellDef="let p" class="uppercase">{{ p.nome }}</td>
     </ng-container>
 
+    <ng-container matColumnDef="categoria">
+      <th mat-header-cell *matHeaderCellDef>Categoria</th>
+      <td mat-cell *matCellDef="let p">
+        @if (p.categoria) { {{ p.categoria.nome }} } @else { <span class="sem-categoria">Sem categoria</span> }
+      </td>
+    </ng-container>
+
     <ng-container matColumnDef="preco">
       <th mat-header-cell *matHeaderCellDef>Preço</th>
       <td mat-cell *matCellDef="let p">R$ {{ p.preco | number:'1.2-2' }}</td>

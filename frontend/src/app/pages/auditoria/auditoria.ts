@@ -149,6 +149,9 @@ export class Auditoria implements OnInit {
       INCLUSAO_CLIENTE: 'Incl. Cliente',
       ALTERACAO_CLIENTE: 'Alt. Cliente',
       EXCLUSAO_CLIENTE: 'Excl. Cliente',
+      INCLUSAO_CATEGORIA: 'Incl. Categoria',
+      ALTERACAO_CATEGORIA: 'Alt. Categoria',
+      EXCLUSAO_CATEGORIA: 'Excl. Categoria',
     };
     return mapa[tipo] ?? tipo;
   }

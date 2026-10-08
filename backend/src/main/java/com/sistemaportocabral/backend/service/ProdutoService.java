@@ -1,6 +1,7 @@
 package com.sistemaportocabral.backend.service;
 
 import com.sistemaportocabral.backend.entity.Produto;
+import com.sistemaportocabral.backend.repository.CategoriaRepository;
 import com.sistemaportocabral.backend.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ public class ProdutoService {
     private ProdutoRepository repository;
 
     @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
     private AuditoriaService auditoriaService;
 
     public List<Produto> listar() {
@@ -24,6 +28,11 @@ public class ProdutoService {
 
     public Produto salvar(Produto produto, Long usuarioId, String usuarioNome) {
         boolean isNovo = produto.getId() == null;
+        if (produto.getCategoria() != null && produto.getCategoria().getId() != null) {
+            produto.setCategoria(categoriaRepository.findById(produto.getCategoria().getId()).orElse(null));
+        } else {
+            produto.setCategoria(null);
+        }
         Produto salvo = repository.save(produto);
 
         String tipo = isNovo ? "INCLUSAO_PRODUTO" : "ALTERACAO_PRODUTO";

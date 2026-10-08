@@ -30,11 +30,27 @@
       } @else if (produtos.length === 0) {
       <p class="sem-dados">Nenhum produto cadastrado.</p>
       } @else {
-      <table mat-table [dataSource]="produtos" class="mat-elevation-z2 produtos-tabela">
+      <mat-form-field class="filtro-categoria">
+        <mat-label>Categoria</mat-label>
+        <mat-select [(ngModel)]="grupoSelecionado">
+          @for (g of grupos; track g.nome) {
+          <mat-option [value]="g">{{ g.nome }} ({{ g.produtos.length }})</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <table mat-table [dataSource]="grupoSelecionado?.produtos ?? []" class="mat-elevation-z2 produtos-tabela">
 
         <ng-container matColumnDef="nome">
           <th mat-header-cell *matHeaderCellDef>Produto</th>
           <td mat-cell *matCellDef="let p">{{ p.nome }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="categoria">
+          <th mat-header-cell *matHeaderCellDef>Categoria</th>
+          <td mat-cell *matCellDef="let p">
+            @if (p.categoria) { {{ p.categoria.nome }} } @else { <span class="sem-categoria">Sem categoria</span> }
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="preco">
@@ -71,6 +87,7 @@
     </div>
 
   </div>
+
   <div class="acoes-finalizar">
     <app-footer
       [itensNoCarrinho]="quantidadeTotalNoCarrinho()" class="footer"

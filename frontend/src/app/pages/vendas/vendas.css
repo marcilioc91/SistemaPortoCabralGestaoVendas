@@ -32,6 +32,16 @@
   margin-bottom: 8px;
 }
 
+.filtro-categoria {
+  width: 280px;
+  max-width: 100%;
+}
+
+.sem-categoria {
+  color: #888;
+  font-style: italic;
+}
+
 .produtos-tabela,
 .carrinho-tabela {
   width: 100%;

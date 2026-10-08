@@ -1,0 +1,42 @@
+<div class="categorias-container">
+  <div class="categorias-header">
+    <h2>Categorias</h2>
+    <div class="header-acoes">
+      <button mat-raised-button color="primary" (click)="abrirFormulario()">
+        <mat-icon>add</mat-icon>
+        Nova Categoria
+      </button>
+      <button mat-stroked-button routerLink="/home">
+        <mat-icon>arrow_back</mat-icon>
+        Voltar
+      </button>
+    </div>
+  </div>
+
+  @if (categorias.length === 0) {
+  <p class="sem-dados">Nenhuma categoria cadastrada.</p>
+  } @else {
+  <table mat-table [dataSource]="categorias" class="categorias-tabela mat-elevation-z2">
+
+    <ng-container matColumnDef="nome">
+      <th mat-header-cell *matHeaderCellDef>Categoria</th>
+      <td mat-cell *matCellDef="let c" class="uppercase">{{ c.nome }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let c" class="acoes-cell">
+        <button mat-icon-button (click)="abrirEdicao(c)" title="Editar">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="excluir(c)" title="Excluir">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="colunas"></tr>
+    <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
+  </table>
+  }
+</div>

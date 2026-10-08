@@ -33,6 +33,12 @@ export const routes: Routes = [
       import('./pages/produto-form/produto-form').then(m => m.ProdutoForm),
   },
   {
+    path: 'categorias',
+    canActivate: [loginGuard],
+    loadComponent: () =>
+      import('./pages/categorias/categorias').then(m => m.Categorias),
+  },
+  {
     path: 'vendas',
     canActivate: [loginGuard],
     loadComponent: () =>

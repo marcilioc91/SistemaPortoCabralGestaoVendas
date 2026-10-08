@@ -27,7 +27,7 @@ import { RelatorioInventarioItem } from '../../models/venda';
 export class RelatorioInventario implements OnInit {
   itens: RelatorioInventarioItem[] = [];
   carregando = true;
-  colunas = ['nomeProduto', 'quantidadeVendida', 'totalReceita', 'totalCusto', 'lucro'];
+  colunas = ['nomeCategoria', 'nomeProduto', 'quantidadeVendida', 'totalReceita', 'totalCusto', 'lucro'];
   totalReceita = 0;
   totalCusto = 0;
   totalLucro = 0;

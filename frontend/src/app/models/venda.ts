@@ -16,6 +16,7 @@ export interface Venda {
 
 export interface RelatorioInventarioItem {
   nomeProduto: string;
+  nomeCategoria: string | null;
   quantidadeVendida: number;
   totalReceita: number;
   totalCusto: number;

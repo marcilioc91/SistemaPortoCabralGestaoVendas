@@ -17,4 +17,8 @@ public class Produto {
     private BigDecimal preco;
     private BigDecimal preco_custo;
     private Integer estoque;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 }

@@ -25,6 +25,11 @@ interface ItemCarrinho {
   quantidade: number;
 }
 
+interface GrupoCategoria {
+  nome: string;
+  produtos: Produto[];
+}
+
 interface DadosConfirmacao {
   cliente: Cliente;
   itens: ItemCarrinho[];
@@ -128,7 +133,9 @@ export class VendaConfirmacaoDialog implements OnInit {
 })
 export class Vendas implements OnInit {
   formatarTelefone = formatarTelefone;
-  produtos: any[] = [];
+  produtos: Produto[] = [];
+  grupos: GrupoCategoria[] = [];
+  grupoSelecionado: GrupoCategoria | null = null;
   clientes: Cliente[] = [];
   filteredClientes: Cliente[] = [];
   carrinho: ItemCarrinho[] = [];
@@ -136,7 +143,7 @@ export class Vendas implements OnInit {
   clienteSearchText = '';
   carregando = true;
 
-  colunasProdutos = ['nome', 'preco', 'estoque', 'acoes'];
+  colunasProdutos = ['nome', 'categoria', 'preco', 'estoque', 'acoes'];
   colunasCarrinho = ['produto', 'preco', 'quantidade', 'subtotal', 'acoes'];
 
   constructor(
@@ -154,6 +161,8 @@ export class Vendas implements OnInit {
     this.produtoService.listar().subscribe({
       next: res => {
         this.produtos = res;
+        this.grupos = this.agruparPorCategoria(res);
+        this.grupoSelecionado = this.grupos[0];
         this.carregando = false;
       },
       error: () => {
@@ -168,6 +177,23 @@ export class Vendas implements OnInit {
       },
       error: () => this.snackBar.open('Erro ao carregar clientes.', 'Fechar', { duration: 3000 })
     });
+  }
+
+  private agruparPorCategoria(produtos: Produto[]): GrupoCategoria[] {
+    const mapa = new Map<number, GrupoCategoria>();
+    const semCategoria: Produto[] = [];
+    for (const p of produtos) {
+      const cat = p.categoria;
+      if (!cat?.id) {
+        semCategoria.push(p);
+        continue;
+      }
+      if (!mapa.has(cat.id)) mapa.set(cat.id, { nome: cat.nome, produtos: [] });
+      mapa.get(cat.id)!.produtos.push(p);
+    }
+    const grupos = [...mapa.values()].sort((a, b) => a.nome.localeCompare(b.nome));
+    if (semCategoria.length > 0) grupos.push({ nome: 'Sem categoria', produtos: semCategoria });
+    return [{ nome: 'Todas', produtos: grupos.flatMap(g => g.produtos) }, ...grupos];
   }
 
   filtrarClientes(valor: string) {

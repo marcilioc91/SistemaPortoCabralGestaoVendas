@@ -30,6 +30,10 @@ export class Home {
     this.router.navigate(['/produto-form']);
   }
 
+  irParaCadastroCategoria() {
+    this.router.navigate(['/categorias']);
+  }
+
   irParaNovaVenda() {
     this.router.navigate(['/vendas']);
   }

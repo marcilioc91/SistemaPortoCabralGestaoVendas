@@ -1,0 +1,14 @@
+<h2 style="padding: 24px 24px 0; text-align: center;">{{ modoEdicao ? 'Editar Categoria' : 'Nova Categoria' }}</h2>
+<div style="padding: 0 24px 24px; display: flex; flex-direction: column; gap: 4px; min-width: 320px;">
+    <mat-form-field>
+        <mat-label>Nome</mat-label>
+        <input matInput [(ngModel)]="dados.nome" name="nome" (ngModelChange)="dados.nome = $event.toUpperCase()"
+            (keyup.enter)="confirmar()">
+    </mat-form-field>
+    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px;">
+        <button mat-raised-button color="primary" [disabled]="!dados.nome.trim()" (click)="confirmar()">
+            Salvar
+        </button>
+        <button mat-button (click)="fechar()">Cancelar</button>
+    </div>
+</div>

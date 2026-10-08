@@ -5,6 +5,15 @@
         <input matInput [(ngModel)]="dados.nome" name="nome" (ngModelChange)="dados.nome = $event.toUpperCase()">
     </mat-form-field>
     <mat-form-field>
+        <mat-label>Categoria</mat-label>
+        <mat-select [(ngModel)]="categoriaId" name="categoria">
+            <mat-option [value]="null">— Sem categoria —</mat-option>
+            @for (c of data?.categorias ?? []; track c.id) {
+            <mat-option [value]="c.id">{{ c.nome }}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+    <mat-form-field>
         <mat-label>Preço de custo (R$)</mat-label>
         <input matInput [(ngModel)]="dados.preco_custo" name="preco_custo" type="number" min="0" step="0.01">
     </mat-form-field>
