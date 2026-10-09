@@ -1,0 +1,57 @@
+<div class="ativacao-container">
+
+    <h2>Ativação do sistema</h2>
+
+    @if (carregando) {
+    <mat-spinner diameter="36" class="ativacao-carregando"></mat-spinner>
+    } @else {
+    <p class="ativacao-texto">
+        Para usar o Porto Cabral neste computador, envie o <strong>código da máquina</strong> ao fornecedor do
+        sistema e importe o arquivo de licença recebido (ou cole a chave).
+    </p>
+
+    @if (status?.mensagem) {
+    <p class="ativacao-alerta">
+        <mat-icon>warning</mat-icon>
+        <span>{{ status?.mensagem }}</span>
+    </p>
+    }
+
+    @if (status?.codigoMaquina) {
+    <div class="ativacao-codigo">
+        <span class="ativacao-codigo-rotulo">Código da máquina</span>
+        <div class="ativacao-codigo-valor">
+            <code>{{ status?.codigoMaquina }}</code>
+            <button mat-icon-button type="button" (click)="copiarCodigo()" aria-label="Copiar código da máquina">
+                <mat-icon>content_copy</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <input #seletorArquivo type="file" accept=".lic" hidden (change)="importarArquivo($event)">
+    <button mat-raised-button color="primary" type="button" class="full-width" [disabled]="enviando"
+        (click)="seletorArquivo.click()">
+        @if (enviando) { <mat-spinner diameter="18" class="ativacao-spinner"></mat-spinner> }
+        @else { <mat-icon>upload_file</mat-icon> }
+        Importar arquivo de licença
+    </button>
+
+    <div class="ativacao-ou"><span>ou cole a chave</span></div>
+
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Chave de licença</mat-label>
+        <textarea matInput [(ngModel)]="chave" name="chave" rows="4" spellcheck="false"
+            placeholder="PC1...."></textarea>
+    </mat-form-field>
+
+    <button mat-stroked-button color="primary" class="full-width" [disabled]="!chave.trim() || enviando"
+        (click)="ativar()">
+        Ativar com a chave
+    </button>
+    }
+    }
+
+    @if (erro) {
+    <p class="ativacao-erro">{{ erro }}</p>
+    }
+</div>

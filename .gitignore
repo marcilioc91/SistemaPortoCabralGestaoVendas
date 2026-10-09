@@ -107,3 +107,7 @@ Annotations
 novasImplementacoes.md
 Melhorias.md
 .claude
+
+# Licenca: chave privada do fornecedor e licenca ativada (nunca versionar)
+*.key
+licenca.lic

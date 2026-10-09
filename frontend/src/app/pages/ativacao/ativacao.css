@@ -1,0 +1,115 @@
+:host {
+    min-height: 100vh;
+    display: flex;
+
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url('../../../assets/LoginArt.jpg');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.ativacao-container {
+    width: 100%;
+    max-width: 460px;
+    margin: 80px auto;
+    padding: 32px;
+    border-radius: 12px;
+    align-self: flex-start;
+
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+h2 {
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.ativacao-texto {
+    margin: 0 0 20px;
+    line-height: 1.4;
+}
+
+.ativacao-alerta {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 0 0 20px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(237, 108, 2, 0.1);
+    color: #b45309;
+}
+
+.ativacao-codigo {
+    margin: 0 0 20px;
+    padding: 12px 16px;
+    border: 1px dashed var(--primary-color, #795548);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.ativacao-codigo-rotulo {
+    display: block;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.ativacao-codigo-valor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.ativacao-codigo-valor code {
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    user-select: all;
+}
+
+.full-width {
+    width: 100%;
+}
+
+textarea {
+    font-family: Consolas, 'Courier New', monospace;
+    word-break: break-all;
+}
+
+.ativacao-ou {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 16px;
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.ativacao-ou::before,
+.ativacao-ou::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid currentColor;
+}
+
+.ativacao-carregando {
+    margin: 24px auto;
+}
+
+.ativacao-spinner {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.ativacao-erro {
+    margin: 12px 0 0;
+    color: #d32f2f;
+    font-size: 0.9rem;
+}

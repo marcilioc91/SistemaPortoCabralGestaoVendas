@@ -41,8 +41,11 @@ Firebird 5 (embarcado, arquivo .fdb)
 sistema-porto-cabral/
 ├── backend/               # Spring Boot (Java)
 ├── frontend/              # Angular + Electron
+├── ferramentas/
+│   └── GeradorLicenca.java # Gerador de licenças: janela + linha de comando (uso do fornecedor)
 ├── Annotations/
 │   └── novaEstrutura.sql  # Scripts do banco de dados
+├── gerar-licenca.bat      # Abre o gerador de licenças (duplo clique)
 └── build-release.bat      # Build do app desktop
 ```
 
@@ -183,6 +186,15 @@ src/app/
 |---|---|---|
 | GET | `/auditoria` | Listar logs (filtro opcional por `usuarioId`) |
 
+### Licença (`/licenca`)
+
+Únicos endpoints liberados enquanto o sistema não está ativado; os demais respondem **423 (Locked)**.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/licenca/status` | Situação da licença e código da máquina |
+| POST | `/licenca/ativar` | Ativar o sistema com a chave de licença (`chave`) |
+
 ---
 
 ## Banco de Dados
@@ -234,6 +246,25 @@ Na tela de login, **"Esqueci minha senha"** → informar usuário ou e-mail → 
 - Pedido e redefinição ficam registrados na auditoria.
 - Envio via **Gmail** (`smtp.gmail.com:587`, STARTTLS) com *senha de app*: preencher `spring.mail.username` e `spring.mail.password` no `config.properties`. Sem essas credenciais, a tela informa que o envio não está configurado.
 - Requer internet na máquina no momento do envio.
+
+### Licença de uso (ativação)
+
+Na primeira execução o sistema abre a tela **Ativação do sistema** e bloqueia todo o resto até receber uma chave de licença válida.
+
+1. A tela mostra o **código da máquina** (`XXXX-XXXX-XXXX-XXXX`, derivado do `MachineGuid` do Windows). O cliente envia esse código ao fornecedor.
+2. O fornecedor gera a chave no **Gerador de Licenças**: dois cliques em `gerar-licenca.bat` abrem a janela (cliente + código da máquina → **Gerar chave**; a chave já vai para a área de transferência) e, com **Salvar arquivo de licença...**, gera o arquivo **`privatekey.lic`** para enviar ao cliente. Pela linha de comando: `gerar-licenca.bat "Nome do cliente" XXXX-XXXX-XXXX-XXXX [pasta]` (com `[pasta]`, salva também o `privatekey.lic`).
+3. O cliente clica em **Importar arquivo de licença** e escolhe o `privatekey.lic` (ou cola a chave e clica em **Ativar com a chave**). A chave fica em `licenca.lic`, na pasta de dados, e é conferida a cada inicialização.
+
+O arquivo de licença tem um cabeçalho legível e a chave assinada entre as linhas `-----BEGIN PORTO CABRAL LICENCA-----` e `-----END PORTO CABRAL LICENCA-----`. Apesar do nome, **não contém a chave privada**: o cabeçalho é só informativo (editá-lo não muda a licença) e o que vale é a chave assinada.
+
+- A chave é **assinada (Ed25519)** com a chave privada do fornecedor; o sistema só tem a chave pública (`LicencaService.CHAVE_PUBLICA`). Sem a chave privada não é possível gerar chaves válidas.
+- Vale **só para a máquina** do código informado (copiar a instalação ou o `licenca.lic` para outro computador não funciona) e é **vitalícia**.
+- Reinstalar o Windows ou trocar de computador muda o código da máquina: é preciso gerar uma nova chave.
+- Bloqueio no backend (`LicencaInterceptor`): toda a API responde 423 sem licença, mesmo chamada direto, exceto `/licenca/**`.
+
+**Chave privada (fornecedor):** criada uma única vez com `gerar-licenca.bat chaves`, fica em `%USERPROFILE%\.portocabral\licenca-privada.key` (ou no caminho da variável `PORTOCABRAL_CHAVE_PRIVADA`). Faça cópia de segurança e **nunca** a coloque no Git ou no instalador: quem tiver esse arquivo gera licenças. Se ela for perdida, é preciso criar um novo par, trocar `CHAVE_PUBLICA` no código e reemitir as licenças.
+
+**Histórico:** toda chave gerada (pela janela ou pela linha de comando) é registrada em `licencas-emitidas.csv`, na mesma pasta da chave privada. A janela lista esse histórico com busca por cliente ou máquina, mostra de novo a chave de uma licença já emitida e avisa quando a máquina já foi licenciada.
 
 ### Diagrama simplificado
 
