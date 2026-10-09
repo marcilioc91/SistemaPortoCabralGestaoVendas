@@ -32,6 +32,49 @@
     margin-top: 8px;
 }
 
+.info-msg {
+    color: var(--cor-info);
+    font-size: 0.85rem;
+    margin: -8px 0 0;
+}
+
+.aviso-duplicidade {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--cor-alerta);
+    border-radius: 8px;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+.aviso-duplicidade p {
+    margin: 0;
+}
+
+.semelhante {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.semelhante small {
+    display: block;
+    color: var(--texto-apagado);
+}
+
+.texto-ajuda {
+    color: var(--texto-suave);
+}
+
+.acoes-duplicidade {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 .text-step {
     color: var(--texto-apagado);
     top: 100%;

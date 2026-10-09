@@ -29,14 +29,18 @@ public class ClienteService {
     private VendaRepository vendaRepository;
 
     @Autowired
+    private DuplicidadeService duplicidadeService;
+
+    @Autowired
     private AuditoriaService auditoriaService;
 
     public List<Cliente> listar() {
         return repository.findAll();
     }
 
+    /** confirmarDuplicidade=false: cadastro parecido já existente gera DuplicidadeException (a tela pede confirmação) */
     @Transactional
-    public Cliente salvar(Cliente cliente, Long usuarioId, String usuarioNome) {
+    public Cliente salvar(Cliente cliente, boolean confirmarDuplicidade, Long usuarioId, String usuarioNome) {
         String cpf = cliente.getPessoa().getCpf();
         if (cpf != null && !cpf.isBlank()) {
             String cpfLimpo = limparCpf(cpf);
@@ -47,6 +51,9 @@ public class ClienteService {
             cliente.getPessoa().setCpf(cpfLimpo);
         } else {
             cliente.getPessoa().setCpf(null);
+        }
+        if (!confirmarDuplicidade) {
+            duplicidadeService.verificar(cliente.getPessoa().getNome(), cliente.getPessoa().getTelefone());
         }
         Pessoa pessoa = pessoaRepository.save(cliente.getPessoa());
         cliente.setPessoa(pessoa);

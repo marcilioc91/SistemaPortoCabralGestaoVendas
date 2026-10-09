@@ -1,0 +1,98 @@
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ajuda {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.acoes-arquivo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nome-arquivo {
+  color: var(--texto-medio);
+  font-size: 0.9rem;
+}
+
+.erro-msg {
+  margin: 0;
+  color: var(--cor-erro);
+  font-size: 0.9rem;
+}
+
+.resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip,
+.situacao {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.novo {
+  color: var(--cor-sucesso);
+  background: color-mix(in srgb, var(--cor-sucesso) 14%, transparent);
+}
+
+.duplicado {
+  color: var(--cor-alerta);
+  background: color-mix(in srgb, var(--cor-alerta) 14%, transparent);
+}
+
+.erro {
+  color: var(--cor-erro);
+  background: color-mix(in srgb, var(--cor-erro) 14%, transparent);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.tabela th {
+  text-align: left;
+  color: var(--texto-suave);
+  font-weight: 500;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.tabela td {
+  padding: 6px 8px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--borda);
+}
+
+.numero {
+  color: var(--texto-apagado);
+}
+
+.sem-quebra {
+  white-space: nowrap;
+}
+
+.detalhe {
+  margin-top: 2px;
+  color: var(--texto-apagado);
+  font-size: 0.78rem;
+}
+
+.detalhe.aviso {
+  color: var(--cor-alerta);
+}

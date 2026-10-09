@@ -1,0 +1,82 @@
+<h2 mat-dialog-title>Importar clientes</h2>
+
+<mat-dialog-content class="conteudo">
+    <p class="ajuda">
+        Arquivo <strong>CSV</strong> exportado do Google Forms ou no modelo do sistema (Nome; CPF; Telefone; Observações).
+        As colunas são reconhecidas pelo cabeçalho. Do formulário, o responsável, a restrição alimentar e a alergia
+        vão para as observações. Quem já estiver cadastrado é ignorado.
+    </p>
+
+    <div class="acoes-arquivo">
+        <input #seletor type="file" accept=".csv,text/csv" hidden (change)="selecionar($event)">
+        <button mat-raised-button color="primary" (click)="seletor.click()" [disabled]="carregando">
+            <mat-icon>upload_file</mat-icon>
+            {{ arquivo ? 'Trocar arquivo' : 'Escolher arquivo' }}
+        </button>
+        <button mat-button (click)="baixarModelo()">
+            <mat-icon>download</mat-icon>
+            Baixar modelo
+        </button>
+        @if (arquivo) {
+        <span class="nome-arquivo">{{ arquivo.name }}</span>
+        }
+        @if (carregando) {
+        <mat-spinner diameter="24"></mat-spinner>
+        }
+    </div>
+
+    @if (erro) {
+    <p class="erro-msg">{{ erro }}</p>
+    }
+
+    @if (previa) {
+    <div class="resumo">
+        <span class="chip novo">{{ previa.incluidos }} novo(s)</span>
+        <span class="chip duplicado">{{ previa.ignorados }} já cadastrado(s), serão ignorados</span>
+        @if (previa.erros) {
+        <span class="chip erro">{{ previa.erros }} com erro</span>
+        }
+    </div>
+
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th>Linha</th>
+                <th>Nome</th>
+                <th>Celular</th>
+                <th>Situação</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (l of previa.linhas; track l.linha) {
+            <tr>
+                <td class="numero">{{ l.linha }}</td>
+                <td>
+                    {{ l.nome || '—' }}
+                    @if (l.obs) {
+                    <div class="detalhe">{{ l.obs }}</div>
+                    }
+                </td>
+                <td class="sem-quebra">{{ telefone(l.telefone) }}</td>
+                <td>
+                    <span class="situacao" [ngClass]="l.situacao.toLowerCase()">{{ rotulo(l.situacao) }}</span>
+                    @if (l.motivo) {
+                    <div class="detalhe">{{ l.motivo }}</div>
+                    }
+                    @for (aviso of l.avisos; track aviso) {
+                    <div class="detalhe aviso">{{ aviso }}</div>
+                    }
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="fechar()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="importar()" [disabled]="!previa?.incluidos || carregando">
+        Importar {{ previa?.incluidos ?? 0 }} cliente(s)
+    </button>
+</mat-dialog-actions>

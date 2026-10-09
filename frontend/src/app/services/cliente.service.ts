@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Cliente } from '../models/cliente';
+import { Cliente, ImportacaoClientes } from '../models/cliente';
 import { AuthService } from './auth.service';
 
 @Injectable({
@@ -23,8 +23,22 @@ export class ClienteService {
     return this.http.get<Cliente[]>(this.api);
   }
 
-  salvar(cliente: Cliente) {
-    return this.http.post<Cliente>(this.api, cliente, { headers: this.headers() });
+  /** 409 com { semelhantes }: cadastro parecido já existe; reenviar com confirmarDuplicidade para gravar mesmo assim */
+  salvar(cliente: Cliente, confirmarDuplicidade = false) {
+    return this.http.post<Cliente>(this.api, cliente, {
+      headers: this.headers(),
+      params: { confirmarDuplicidade },
+    });
+  }
+
+  /** confirmar=false: só a prévia; confirmar=true: grava os clientes novos */
+  importar(arquivo: File, confirmar: boolean) {
+    const dados = new FormData();
+    dados.append('arquivo', arquivo);
+    return this.http.post<ImportacaoClientes>(`${this.api}/importar`, dados, {
+      headers: this.headers(),
+      params: { confirmar },
+    });
   }
 
   atualizar(id: number, cliente: Cliente) {

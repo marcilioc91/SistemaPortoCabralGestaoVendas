@@ -143,7 +143,8 @@ src/app/
 | Método | Rota | Descrição | Perfil |
 |---|---|---|---|
 | POST | `/auth/login` | Autenticar usuário | Todos |
-| POST | `/auth/cadastro` | Cadastrar novo usuário | Todos |
+| POST | `/auth/cadastro` | Cadastrar novo usuário (CPF de cliente existente: promove o cliente a usuário) | Todos |
+| GET | `/auth/cadastro/cliente-por-cpf/{cpf}` | Dados do cliente com esse CPF, para preencher o cadastro (404: CPF novo; 409: já é usuário) | Todos |
 | POST | `/auth/recuperar-senha/solicitar` | Enviar código de recuperação para o e-mail cadastrado (`identificador`: login ou e-mail) | Todos |
 | POST | `/auth/recuperar-senha/validar` | Conferir o código sem consumi-lo (`identificador`, `codigo`) | Todos |
 | POST | `/auth/recuperar-senha/redefinir` | Redefinir senha com o código (`identificador`, `codigo`, `novaSenha`) | Todos |
@@ -156,7 +157,8 @@ src/app/
 | Método | Rota | Descrição |
 |---|---|---|
 | GET | `/clientes` | Listar todos |
-| POST | `/clientes` | Criar cliente |
+| POST | `/clientes` | Criar cliente (409 se houver cadastro parecido; `?confirmarDuplicidade=true` grava mesmo assim) |
+| POST | `/clientes/importar` | Importar CSV (multipart, campo `arquivo`); `?confirmar=false` devolve só a prévia, `true` grava os novos |
 | PUT | `/clientes/{id}` | Atualizar cliente |
 | DELETE | `/clientes/{id}` | Excluir cliente |
 
@@ -321,6 +323,13 @@ PESSOA ──────┬── USUARIO
 
 - **Autenticação**: login com BCrypt, sessão em sessionStorage, guards de rota
 - **Cadastro**: cria automaticamente Pessoa + Usuário + Cliente
+- **Cliente → usuário**: no cadastro, informar o CPF de um cliente já existente preenche nome e telefone e cria só o acesso (login, e-mail, senha), mantendo o mesmo cliente e o histórico de compras; fica registrado na auditoria. CPF que já tem usuário é recusado
+- **Cadastro duplicado**: ao cadastrar cliente ou usuário, o sistema avisa se já existir cadastro parecido e só grava após confirmação. No cadastro de usuário, **"Sou eu"** cria o acesso para o cadastro existente em vez de criar outro. Regra (`DuplicidadeService`): mesmo nome completo (ignorando acentos, maiúsculas e espaços) **ou** mesmo celular (últimos 8 dígitos) **e** mesmo primeiro nome; o celular sozinho não basta, porque irmãos e casais costumam compartilhar o número
+- **Importar clientes** (tela de clientes → **Importar**): arquivo CSV com prévia antes de gravar. Aceita o CSV do Google Forms como foi exportado e o modelo do sistema (**Baixar modelo**: `Nome;CPF;Telefone;Observações`); as colunas são reconhecidas pelo cabeçalho (`Nome`/`Nome completo`, `Telefone`/`Celular`, `CPF`, `Observações`) e as demais são ignoradas
+  - Do formulário, `Nome do responsável` + `Celular do responsável`, `Restrição alimentar` e `Alergia` vão para as observações (respostas como "Não", "Nenhuma", "Sem alergias" são descartadas); a coluna livre `Observação` do formulário fica de fora
+  - Nome em maiúsculas; celular só com dígitos (tira o 55, põe o 9 em celular antigo de 10 dígitos)
+  - Quem já está cadastrado (mesma regra de duplicidade ou mesmo CPF) ou aparece repetido no arquivo é **ignorado**; a importação grava tudo ou nada e fica na auditoria
+  - Aceita UTF-8 (Google Forms) e Windows-1252 (Excel), separador `,` ou `;`
 - **Clientes**: CRUD, visualização de histórico de compras, exclusão em cascata
 - **Produtos**: CRUD, controle de estoque com validação anti-negativo
 - **Vendas**: carrinho dinâmico, cálculo de total, confirmação de pagamento

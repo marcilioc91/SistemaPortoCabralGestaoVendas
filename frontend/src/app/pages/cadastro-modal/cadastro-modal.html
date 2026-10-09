@@ -18,6 +18,10 @@
                 <input matInput [(ngModel)]="conta.cpf" name="cpf" mask="000.000.000-00" (blur)="validarCpf()">
             </mat-form-field>
 
+            @if (clienteExistente && !modoCliente) {
+            <p class="info-msg">Cliente já cadastrado: será criado o acesso para ele.</p>
+            }
+
             @if (!modoCliente) {
             <mat-form-field class="full-width">
                 <mat-label>E-mail</mat-label>
@@ -30,21 +34,23 @@
                 <input matInput [(ngModel)]="conta.telefone" name="telefone" mask="(00) 00000-0000">
             </mat-form-field>
 
+            @if (!clienteExistente || modoCliente) {
             <mat-form-field class="full-width">
                 <mat-label>Observações</mat-label>
                 <input matInput [(ngModel)]="conta.obs" name="obs">
             </mat-form-field>
+            }
 
             @if (!modoCliente) {
             <button type="button" mat-raised-button color="primary" (click)="nextStep()"
-                [disabled]="!conta.nome || !isCpfValido || !conta.email || !conta.telefone || !isEmailValido">
+                [disabled]="!conta.nome || !isCpfValido || cpfComUsuario || !conta.email || !conta.telefone || !isEmailValido">
                 Próximo
             </button>
             }
 
             @if (modoCliente) {
             <button type="button" mat-raised-button color="primary" (click)="salvar()"
-                [disabled]="!conta.nome || !isCpfValido || !conta.telefone">
+                [disabled]="!conta.nome || !isCpfValido || !conta.telefone || semelhantes.length > 0">
                 Salvar
             </button>
             }
@@ -80,13 +86,43 @@
                 Voltar
             </button>
 
-            <button mat-raised-button color="primary" (click)="salvar()" [disabled]="!conta.usuario || !conta.senha">
+            <button mat-raised-button color="primary" (click)="salvar()"
+                [disabled]="!conta.usuario || !conta.senha || semelhantes.length > 0">
                 Concluir
             </button>
 
             @if (erro) {
             <p class="erro-msg">{{ erro }}</p>
             }
+        </div>
+        }
+
+        @if (semelhantes.length) {
+        <div class="aviso-duplicidade">
+            <p><strong>Já existe cadastro parecido:</strong></p>
+            @for (p of semelhantes; track p.pessoaId) {
+            <div class="semelhante">
+                <span>
+                    {{ p.nome }} · {{ formatarTelefone(p.telefone) }}
+                    @if (!modoCliente && p.possuiUsuario) {
+                    <small>já tem acesso: use "Esqueci minha senha"</small>
+                    }
+                </span>
+                @if (!modoCliente && !p.possuiUsuario) {
+                <button mat-stroked-button type="button" (click)="usarCadastro(p)">Sou eu</button>
+                }
+            </div>
+            }
+            <p class="texto-ajuda">
+                {{ modoCliente ? 'Se for outra pessoa, confirme o cadastro.'
+                : 'Se for você, use o cadastro existente. Se for outra pessoa, continue.' }}
+            </p>
+            <div class="acoes-duplicidade">
+                <button mat-button type="button" (click)="cancelarDuplicidade()">Voltar</button>
+                <button mat-raised-button color="primary" type="button" (click)="cadastrarMesmoAssim()">
+                    {{ modoCliente ? 'Cadastrar mesmo assim' : 'Não sou eu, continuar' }}
+                </button>
+            </div>
         </div>
         }
 

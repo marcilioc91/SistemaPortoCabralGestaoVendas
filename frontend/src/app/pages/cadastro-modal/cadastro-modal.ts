@@ -7,10 +7,10 @@ import { MatInputModule } from '@angular/material/input';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { MatIcon } from "@angular/material/icon";
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, CadastroRequest } from '../../services/auth.service';
 import { ClienteService } from '../../services/cliente.service';
-import { Cliente } from '../../models/cliente';
-import { cpfValido, emailValido } from '../../utils/utils';
+import { Cliente, PessoaSemelhante } from '../../models/cliente';
+import { cpfValido, emailValido, formatarTelefone } from '../../utils/utils';
 
 export interface CadastroModalData {
   modo: 'usuario' | 'cliente';
@@ -44,6 +44,15 @@ export class CadastroModal {
     obs: ''
   }
 
+  /** CPF de um cliente já cadastrado: o cadastro cria o acesso para ele (promoção a usuário) */
+  clienteExistente = false;
+  /** CPF que já pertence a um usuário: não deixa avançar */
+  cpfComUsuario = false;
+  /** Cadastros parecidos apontados pelo backend: grava só depois que a pessoa decide */
+  semelhantes: PessoaSemelhante[] = [];
+  formatarTelefone = formatarTelefone;
+  private cpfConsultado = '';
+
   validarCpf() {
     if (this.conta.cpf && !cpfValido(this.conta.cpf)) {
       this.erro = 'CPF inválido.';
@@ -51,6 +60,42 @@ export class CadastroModal {
     } else {
       this.erro = '';
     }
+    if (!this.modoCliente) {
+      this.buscarClientePorCpf();
+    }
+  }
+
+  private buscarClientePorCpf() {
+    const cpf = (this.conta.cpf ?? '').replace(/\D/g, '');
+    if (cpf === this.cpfConsultado) return;
+    this.cpfConsultado = cpf;
+
+    // CPF trocado: os dados preenchidos eram de outra pessoa
+    if (this.clienteExistente) {
+      this.conta.nome = '';
+      this.conta.telefone = '';
+    }
+    this.clienteExistente = false;
+    this.cpfComUsuario = false;
+    this.cdr.markForCheck();
+    if (!cpfValido(cpf)) return;
+
+    this.auth.clientePorCpf(cpf).subscribe({
+      next: (cliente) => {
+        if (cpf !== this.cpfConsultado) return;
+        this.clienteExistente = true;
+        this.conta.nome = cliente.nome ?? '';
+        this.conta.telefone = cliente.telefone ?? '';
+        this.conta.obs = '';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        if (cpf !== this.cpfConsultado || err.status !== 409) return;
+        this.cpfComUsuario = true;
+        this.erro = typeof err.error === 'string' ? err.error : 'Este CPF já possui usuário.';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   get isCpfValido(): boolean {
@@ -83,6 +128,35 @@ export class CadastroModal {
     }
   }
 
+  /** É outra pessoa: grava mesmo com cadastro parecido */
+  cadastrarMesmoAssim() {
+    this.semelhantes = [];
+    if (this.modoCliente) {
+      this.salvarCliente(true);
+    } else {
+      this.salvarUsuario({ confirmarDuplicidade: true });
+    }
+  }
+
+  /** "Sou eu": cria o acesso para o cadastro que já existe */
+  usarCadastro(pessoa: PessoaSemelhante) {
+    this.semelhantes = [];
+    this.salvarUsuario({ pessoaIdExistente: pessoa.pessoaId });
+  }
+
+  cancelarDuplicidade() {
+    this.semelhantes = [];
+  }
+
+  /** 409 com a lista de cadastros parecidos */
+  private tratarDuplicidade(err: any): boolean {
+    if (err.status !== 409 || !Array.isArray(err.error?.semelhantes)) return false;
+    this.semelhantes = err.error.semelhantes;
+    this.erro = '';
+    this.cdr.markForCheck();
+    return true;
+  }
+
   private validarCamposComuns(): boolean {
     if (this.conta.cpf && !cpfValido(this.conta.cpf)) {
       this.erro = 'CPF inválido.';
@@ -92,7 +166,7 @@ export class CadastroModal {
     return true;
   }
 
-  private salvarUsuario() {
+  private salvarUsuario(opcoes: Partial<CadastroRequest> = {}) {
     if (!this.validarCamposComuns()) return;
     if (!emailValido(this.conta.email)) {
       this.erro = 'E-mail inválido.';
@@ -107,17 +181,19 @@ export class CadastroModal {
       telefone: this.conta.telefone || undefined,
       usuario: this.conta.usuario,
       senha: this.conta.senha,
-      obs: this.conta.obs || undefined
+      obs: this.conta.obs || undefined,
+      ...opcoes
     }).subscribe({
       next: () => this.dialogRef.close(true),
       error: (err) => {
+        if (this.tratarDuplicidade(err)) return;
         this.erro = typeof err.error === 'string' ? err.error : 'Erro ao realizar cadastro.';
         this.cdr.markForCheck();
       }
     });
   }
 
-  private salvarCliente() {
+  private salvarCliente(confirmarDuplicidade = false) {
     if (!this.validarCamposComuns()) return;
     this.erro = '';
     const cliente: Cliente = {
@@ -128,9 +204,10 @@ export class CadastroModal {
       },
       obs: this.conta.obs || undefined,
     };
-    this.clienteService.salvar(cliente).subscribe({
+    this.clienteService.salvar(cliente, confirmarDuplicidade).subscribe({
       next: () => this.dialogRef.close(true),
       error: (err) => {
+        if (this.tratarDuplicidade(err)) return;
         this.erro = typeof err.error === 'string' ? err.error : 'Erro ao cadastrar cliente.';
         this.cdr.markForCheck();
       }
@@ -150,7 +227,7 @@ export class CadastroModal {
   step = 0;
 
   nextStep() {
-    if (!this.validarCamposComuns()) return;
+    if (!this.validarCamposComuns() || this.cpfComUsuario) return;
     if (!emailValido(this.conta.email)) {
       this.erro = 'E-mail inválido.';
       this.cdr.markForCheck();

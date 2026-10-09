@@ -10,6 +10,16 @@ export interface CadastroRequest {
   usuario: string;
   senha: string;
   obs?: string;
+  /** Grava mesmo havendo cadastro parecido (é outra pessoa) */
+  confirmarDuplicidade?: boolean;
+  /** "Sou eu": cria o acesso para este cadastro existente */
+  pessoaIdExistente?: number;
+}
+
+/** Cliente já cadastrado com o CPF informado no cadastro de usuário */
+export interface ClienteExistente {
+  nome: string;
+  telefone?: string;
 }
 
 @Injectable({
@@ -26,6 +36,11 @@ export class AuthService {
 
   cadastrar(dados: CadastroRequest) {
     return this.http.post(this.api + "/cadastro", dados)
+  }
+
+  /** 404: CPF novo; 409: CPF já possui usuário */
+  clientePorCpf(cpf: string) {
+    return this.http.get<ClienteExistente>(`${this.api}/cadastro/cliente-por-cpf/${cpf.replace(/\D/g, '')}`)
   }
 
   trocarSenha(login: string, senhaAtual: string, novaSenha: string) {

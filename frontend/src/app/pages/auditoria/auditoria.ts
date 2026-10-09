@@ -155,13 +155,15 @@ export class Auditoria implements OnInit {
       SOLICITACAO_RECUPERACAO_SENHA: 'Pedido Rec. Senha',
       RECUPERACAO_SENHA: 'Rec. Senha',
       TROCA_SENHA: 'Troca Senha',
+      PROMOCAO_CLIENTE_USUARIO: 'Cliente → Usuário',
+      IMPORTACAO_CLIENTES: 'Import. Clientes',
     };
     return mapa[tipo] ?? tipo;
   }
 
   corTipo(tipo: string): string {
     if (tipo === 'VENDA') return 'venda';
-    if (tipo.startsWith('INCLUSAO')) return 'inclusao';
+    if (tipo.startsWith('INCLUSAO') || tipo === 'PROMOCAO_CLIENTE_USUARIO' || tipo === 'IMPORTACAO_CLIENTES') return 'inclusao';
     if (tipo.startsWith('ALTERACAO')) return 'alteracao';
     if (tipo.startsWith('EXCLUSAO')) return 'exclusao';
     return '';

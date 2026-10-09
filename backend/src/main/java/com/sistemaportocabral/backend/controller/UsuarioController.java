@@ -2,11 +2,13 @@ package com.sistemaportocabral.backend.controller;
 
 import com.sistemaportocabral.backend.dto.AtualizarPerfilDTO;
 import com.sistemaportocabral.backend.dto.CadastroRequestDTO;
+import com.sistemaportocabral.backend.dto.ClienteExistenteDTO;
 import com.sistemaportocabral.backend.dto.LoginRequestDTO;
 import com.sistemaportocabral.backend.dto.RecuperacaoSenhaDTO;
 import com.sistemaportocabral.backend.dto.ResetSenhaDTO;
 import com.sistemaportocabral.backend.dto.TrocarSenhaDTO;
 import com.sistemaportocabral.backend.entity.Usuario;
+import com.sistemaportocabral.backend.service.DuplicidadeException;
 import com.sistemaportocabral.backend.service.RecuperacaoSenhaService;
 import com.sistemaportocabral.backend.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +38,22 @@ public class UsuarioController {
         try {
             Usuario criado = service.cadastrar(dto);
             return ResponseEntity.status(201).body(criado);
+        } catch (DuplicidadeException e) {
+            return ResponseEntity.status(409).body(e.resposta());
         } catch (Exception e) {
             return ResponseEntity.status(400).body("Erro ao cadastrar: " + e.getMessage());
+        }
+    }
+
+    /** Preenchimento do cadastro: cliente que já tem esse CPF (404 se o CPF é novo, 409 se já é usuário). */
+    @GetMapping("/cadastro/cliente-por-cpf/{cpf}")
+    public ResponseEntity<?> clientePorCpf(@PathVariable String cpf) {
+        try {
+            return service.buscarPessoaParaPromover(cpf)
+                    .<ResponseEntity<?>>map(p -> ResponseEntity.ok(new ClienteExistenteDTO(p.getNome(), p.getTelefone())))
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
         }
     }
 

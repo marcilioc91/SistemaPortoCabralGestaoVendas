@@ -15,12 +15,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { Router, RouterLink } from '@angular/router';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
-import { Cliente } from '../../models/cliente';
+import { Cliente, ImportacaoClientes } from '../../models/cliente';
 import { VendaResposta } from '../../models/venda';
 import { AuthService } from '../../services/auth.service';
 import { ClienteService } from '../../services/cliente.service';
 import { VendaService } from '../../services/venda.service';
 import { CadastroModal } from '../cadastro-modal/cadastro-modal';
+import { ImportarClientesDialog } from './importar-clientes-dialog';
 import { formatarTelefone } from '../../utils/utils';
 
 // ── Diálogo de confirmação ────────────────────────────────────────────────────
@@ -189,6 +190,16 @@ export class Clientes implements OnInit, AfterViewInit {
     ref.afterClosed().subscribe(sucesso => {
       if (!sucesso) return;
       this.snackBar.open('Cliente cadastrado com sucesso!', 'Fechar', { duration: 3000 });
+      this.carregar();
+    });
+  }
+
+  abrirImportacao() {
+    const ref = this.dialog.open(ImportarClientesDialog, { width: '860px', maxWidth: '95vw' });
+    ref.afterClosed().subscribe((resultado?: ImportacaoClientes) => {
+      if (!resultado) return;
+      const ignorados = resultado.ignorados ? `, ${resultado.ignorados} já cadastrado(s) ignorado(s)` : '';
+      this.snackBar.open(`${resultado.incluidos} cliente(s) importado(s)${ignorados}.`, 'Fechar', { duration: 5000 });
       this.carregar();
     });
   }
