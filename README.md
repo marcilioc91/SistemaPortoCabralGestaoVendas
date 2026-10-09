@@ -142,6 +142,7 @@ src/app/
 | POST | `/auth/login` | Autenticar usuário | Todos |
 | POST | `/auth/cadastro` | Cadastrar novo usuário | Todos |
 | POST | `/auth/recuperar-senha/solicitar` | Enviar código de recuperação para o e-mail cadastrado (`identificador`: login ou e-mail) | Todos |
+| POST | `/auth/recuperar-senha/validar` | Conferir o código sem consumi-lo (`identificador`, `codigo`) | Todos |
 | POST | `/auth/recuperar-senha/redefinir` | Redefinir senha com o código (`identificador`, `codigo`, `novaSenha`) | Todos |
 | GET | `/auth/usuarios` | Listar usuários | ADMIN |
 | PATCH | `/auth/usuarios/{id}/reset-senha` | Redefinir senha | ADMIN |
@@ -225,11 +226,11 @@ Modelo com instruções: [`backend/config.exemplo.properties`](backend/config.ex
 
 ### Recuperação de senha por e-mail
 
-Na tela de login, **"Esqueci minha senha"** → informar usuário ou e-mail → o sistema envia um **código de 6 dígitos** para o e-mail cadastrado → informar o código e a nova senha.
+Na tela de login, **"Esqueci minha senha"** → informar usuário ou e-mail → o sistema envia um **código de 6 dígitos** para o e-mail cadastrado → informar o código (validado antes de seguir) → informar a nova senha.
 
 - Código válido por **15 minutos**, de uso único, guardado como hash BCrypt (tabela `RECUPERACAO_SENHA`).
-- Máximo de **5 tentativas** por código; novo envio só após 60 segundos; pedir um novo código invalida o anterior.
-- A resposta é a mesma exista ou não o usuário (não revela quem está cadastrado).
+- Máximo de **5 tentativas** por código, somando a validação e a redefinição; novo envio só após 60 segundos; pedir um novo código invalida o anterior.
+- Usuário/e-mail não cadastrado ou usuário sem e-mail: a tela mostra o erro e não avança.
 - Pedido e redefinição ficam registrados na auditoria.
 - Envio via **Gmail** (`smtp.gmail.com:587`, STARTTLS) com *senha de app*: preencher `spring.mail.username` e `spring.mail.password` no `config.properties`. Sem essas credenciais, a tela informa que o envio não está configurado.
 - Requer internet na máquina no momento do envio.

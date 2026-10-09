@@ -51,20 +51,18 @@ public class RecuperacaoSenhaService {
     @Value("${app.mail.remetente-nome:Porto Cabral}")
     private String remetenteNome;
 
-    /**
-     * Gera um código e envia para o e-mail cadastrado. Não informa se o usuário existe:
-     * o chamador sempre recebe a mesma resposta.
-     */
+    /** Gera um código e envia para o e-mail cadastrado. Usuário inexistente ou sem e-mail: IllegalArgumentException. */
     @Transactional
     public void solicitar(String identificador) {
         if (remetente == null || remetente.isBlank()) {
             throw new IllegalStateException("O envio de e-mail não está configurado. Procure o administrador do sistema.");
         }
 
-        Optional<Usuario> encontrado = buscarUsuario(identificador);
-        if (encontrado.isEmpty()) return;
-        Usuario usuario = encontrado.get();
-        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) return;
+        Usuario usuario =
+                buscarUsuario(identificador).orElseThrow(() -> new IllegalArgumentException("Usuário ou e-mail não cadastrado."));
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Este usuário não possui e-mail cadastrado. Procure o administrador do sistema.");
+        }
 
         LocalDateTime agora = LocalDateTime.now();
         boolean enviadoAgoraHaPouco = repository.findFirstByUsuarioAndUsadoFalseOrderByCriadoEmDesc(usuario)
@@ -89,12 +87,35 @@ public class RecuperacaoSenhaService {
                 "Código de recuperação de senha enviado para o e-mail cadastrado do usuário '" + usuario.getUsuarioLogin() + "'.");
     }
 
+    /**
+     * Confere o código sem consumi-lo (ele continua valendo para a redefinição).
+     * Tentativas erradas ficam gravadas (sem rollback) e contam para o mesmo limite.
+     */
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
+    public void validar(String identificador, String codigo) {
+        conferirCodigo(identificador, codigo);
+    }
+
     /** Valida o código e define a nova senha. Tentativas erradas ficam gravadas (sem rollback). */
     @Transactional(noRollbackFor = IllegalArgumentException.class)
     public void redefinir(String identificador, String codigo, String novaSenha) {
         if (novaSenha == null || novaSenha.isBlank()) {
             throw new IllegalArgumentException("A nova senha não pode ser vazia.");
         }
+
+        RecuperacaoSenha rec = conferirCodigo(identificador, codigo);
+        Usuario usuario = rec.getUsuario();
+
+        rec.setUsado(true);
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
+
+        auditoriaService.registrar(usuario.getId(), nomeDe(usuario), "RECUPERACAO_SENHA",
+                "Senha do usuário '" + usuario.getUsuarioLogin() + "' redefinida via código enviado por e-mail.");
+    }
+
+    /** Retorna o código pendente se estiver correto; caso contrário conta a tentativa e lança IllegalArgumentException. */
+    private RecuperacaoSenha conferirCodigo(String identificador, String codigo) {
         String erroPadrao = "Código inválido ou expirado.";
 
         Usuario usuario = buscarUsuario(identificador)
@@ -116,13 +137,7 @@ public class RecuperacaoSenhaService {
             }
             throw new IllegalArgumentException("Código incorreto. Tentativas restantes: " + (MAX_TENTATIVAS - rec.getTentativas()) + ".");
         }
-
-        rec.setUsado(true);
-        usuario.setSenha(passwordEncoder.encode(novaSenha));
-        usuarioRepository.save(usuario);
-
-        auditoriaService.registrar(usuario.getId(), nomeDe(usuario), "RECUPERACAO_SENHA",
-                "Senha do usuário '" + usuario.getUsuarioLogin() + "' redefinida via código enviado por e-mail.");
+        return rec;
     }
 
     private Optional<Usuario> buscarUsuario(String identificador) {

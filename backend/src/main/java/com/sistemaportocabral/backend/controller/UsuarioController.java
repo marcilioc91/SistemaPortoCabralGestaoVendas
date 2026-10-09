@@ -54,10 +54,21 @@ public class UsuarioController {
     public ResponseEntity<?> solicitarRecuperacao(@RequestBody RecuperacaoSenhaDTO dto) {
         try {
             recuperacaoSenhaService.solicitar(dto.getIdentificador());
-            // Mesma resposta exista ou não o usuário
-            return ResponseEntity.ok("Se o usuário estiver cadastrado, um código foi enviado para o e-mail dele.");
+            return ResponseEntity.ok("Código enviado para o e-mail cadastrado.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
         } catch (IllegalStateException e) {
             return ResponseEntity.status(503).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/recuperar-senha/validar")
+    public ResponseEntity<?> validarCodigoRecuperacao(@RequestBody RecuperacaoSenhaDTO dto) {
+        try {
+            recuperacaoSenhaService.validar(dto.getIdentificador(), dto.getCodigo());
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 

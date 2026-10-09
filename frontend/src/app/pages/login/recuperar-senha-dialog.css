@@ -28,6 +28,32 @@
   font-size: 0.9rem;
 }
 
+.rec-codigo {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.rec-digito {
+  width: 44px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid #bdbdbd;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-align: center;
+  outline: none;
+  caret-color: transparent;
+}
+
+.rec-digito:focus {
+  border: 2px solid var(--primary-color, #795548);
+}
+
 .rec-reenviar {
   padding-left: 0;
 }

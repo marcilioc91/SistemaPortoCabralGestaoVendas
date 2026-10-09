@@ -10,17 +10,30 @@
         <input matInput [(ngModel)]="identificador" name="identificador" autocomplete="username"
             (keyup.enter)="solicitar()">
     </mat-form-field>
-    } @else {
+    } @else if (etapa === 'codigo') {
     <p class="rec-aviso">
         <mat-icon>mark_email_read</mat-icon>
         <span>{{ aviso }} O código vale por 15 minutos.</span>
     </p>
 
-    <mat-form-field appearance="outline" class="rec-campo">
-        <mat-label>Código de 6 dígitos</mat-label>
-        <input matInput [(ngModel)]="codigo" name="codigo" inputmode="numeric" maxlength="6"
-            autocomplete="one-time-code">
-    </mat-form-field>
+    <p class="rec-texto">Digite o código de 6 dígitos enviado para o seu e-mail.</p>
+    <div class="rec-codigo" role="group" aria-label="Código de verificação">
+        @for (d of digitos; track $index; let i = $index) {
+        <input #digito class="rec-digito" [value]="d" inputmode="numeric" pattern="[0-9]*"
+            [attr.autocomplete]="i === 0 ? 'one-time-code' : 'off'" [attr.aria-label]="'Dígito ' + (i + 1)"
+            (input)="aoDigitar(i, $event)" (keydown)="aoTeclar(i, $event)" (paste)="aoColar(i, $event)"
+            (focus)="digito.select()">
+        }
+    </div>
+
+    <button mat-button type="button" class="rec-reenviar" (click)="voltar()">
+        Não recebeu? Solicitar novo código
+    </button>
+    } @else {
+    <p class="rec-aviso">
+        <mat-icon>verified</mat-icon>
+        <span>Código confirmado. Defina a nova senha.</span>
+    </p>
 
     <mat-form-field appearance="outline" class="rec-campo">
         <mat-label>Nova senha</mat-label>
@@ -42,7 +55,7 @@
     </mat-form-field>
 
     <button mat-button type="button" class="rec-reenviar" (click)="voltar()">
-        Não recebeu? Solicitar novo código
+        Solicitar novo código
     </button>
     }
 
@@ -57,6 +70,11 @@
     <button mat-raised-button color="primary" [disabled]="!identificador.trim() || enviando" (click)="solicitar()">
         @if (enviando) { <mat-spinner diameter="18" class="rec-spinner"></mat-spinner> }
         Enviar código
+    </button>
+    } @else if (etapa === 'codigo') {
+    <button mat-raised-button color="primary" [disabled]="!codigoCompleto() || enviando" (click)="validarCodigo()">
+        @if (enviando) { <mat-spinner diameter="18" class="rec-spinner"></mat-spinner> }
+        Validar código
     </button>
     } @else {
     <button mat-raised-button color="primary" [disabled]="!podeRedefinir() || enviando" (click)="redefinir()">

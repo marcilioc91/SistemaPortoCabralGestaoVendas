@@ -36,6 +36,10 @@ export class AuthService {
     return this.http.post(this.api + "/recuperar-senha/solicitar", { identificador }, { responseType: 'text' })
   }
 
+  validarCodigoRecuperacao(identificador: string, codigo: string) {
+    return this.http.post(this.api + "/recuperar-senha/validar", { identificador, codigo }, { responseType: 'text' })
+  }
+
   redefinirSenhaComCodigo(identificador: string, codigo: string, novaSenha: string) {
     return this.http.post(this.api + "/recuperar-senha/redefinir", { identificador, codigo, novaSenha }, { responseType: 'text' })
   }
