@@ -1,9 +1,91 @@
+/* Paleta da arte de fundo: azul do mar, ciano do subtítulo e magenta da vela do logo.
+   As telas usam estas variáveis (e não cores fixas) para funcionar nos temas claro e escuro. */
 :root {
-  --primary-color: #795548;
-  --secondary-color: #ff5722;
-  --accent-color: #607d8b;
-  --background-color: #f5f5f5;
-  --text-color: #5d4037;
+  --primary-color: #1f5fa8;
+  --secondary-color: #d6336c;
+  --accent-color: #2fa7d8;
+  --background-color: #f3f7fb;
+  --text-color: #1e3a5f;
+
+  /* Textos */
+  --texto-forte: #0f2a4a;
+  --texto-medio: #2b5179;
+  --texto-suave: #55657a;
+  --texto-apagado: #888;
+
+  /* Superfícies e bordas */
+  --fundo-pagina:
+    radial-gradient(circle at 20% 20%, rgba(224, 69, 123, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(127, 211, 245, 0.18), transparent 40%),
+    linear-gradient(180deg, #f5f8fc 0%, #e3edf7 100%);
+  --fundo-cartao:
+    radial-gradient(circle at 80% 80%, rgba(224, 69, 123, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(127, 211, 245, 0.15), transparent 40%),
+    linear-gradient(180deg, #f7fafd 0%, #e3edf7 100%);
+  --fundo-destaque: #e8f0f8;
+  --fundo-neutro: #f5f5f5;
+  --fundo-painel: rgba(255, 255, 255, 0.85);
+  --fundo-modal: linear-gradient(rgba(255, 177, 255, 0.082), rgba(230, 228, 228, 0.85));
+  --borda: #c3cfdc;
+  --borda-destaque: #a9c1db;
+  --sombra-hover: rgba(31, 95, 168, 0.3);
+
+  /* Cores com significado */
+  --cor-sucesso: #2e7d32;
+  --cor-alerta: #f57c00;
+  --cor-erro: #d32f2f;
+  --cor-info: #1565c0;
+}
+
+/* Tema escuro (botão na tela inicial): mesmas variáveis, tons do mar à noite */
+body.tema-escuro {
+  --primary-color: #5fa3e8;
+  --secondary-color: #ec6a96;
+  --accent-color: #4fc3f7;
+  --background-color: #0d1b2e;
+  --text-color: #dbe7f5;
+
+  --texto-forte: #eef4fb;
+  --texto-medio: #a9c1db;
+  --texto-suave: #b4c0cf;
+  --texto-apagado: #8796a8;
+
+  --fundo-pagina:
+    radial-gradient(circle at 20% 20%, rgba(224, 69, 123, 0.10), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(47, 167, 216, 0.12), transparent 40%),
+    linear-gradient(180deg, #0d1b2e 0%, #10243d 100%);
+  --fundo-cartao:
+    radial-gradient(circle at 80% 80%, rgba(224, 69, 123, 0.10), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(47, 167, 216, 0.10), transparent 40%),
+    linear-gradient(180deg, #17304f 0%, #122841 100%);
+  --fundo-destaque: #1a2d47;
+  --fundo-neutro: #172a42;
+  --fundo-painel: rgba(16, 34, 58, 0.88);
+  --fundo-modal: linear-gradient(rgba(224, 69, 123, 0.06), rgba(16, 34, 58, 0.9));
+  --borda: #3a4d66;
+  --borda-destaque: #3d5a80;
+  --sombra-hover: rgba(95, 163, 232, 0.35);
+
+  --cor-sucesso: #66bb6a;
+  --cor-alerta: #ffb74d;
+  --cor-erro: #ef5350;
+  --cor-info: #64b5f6;
+
+  /* Bootstrap (carregado depois deste arquivo) fixa a cor do texto do body */
+  --bs-body-color: var(--text-color);
+  --bs-body-bg: var(--background-color);
+
+  /* Superfícies do Angular Material (tabelas, campos, diálogos, menus) em azul-marinho,
+     em vez do cinza-preto neutro do tema escuro padrão */
+  --mat-sys-surface: #10243d;
+  --mat-sys-surface-dim: #0d1b2e;
+  --mat-sys-surface-bright: #1f3858;
+  --mat-sys-surface-container-lowest: #0b1828;
+  --mat-sys-surface-container-low: #12283f;
+  --mat-sys-surface-container: #152b47;
+  --mat-sys-surface-container-high: #1a3250;
+  --mat-sys-surface-container-highest: #1f3858;
+  --mat-sys-surface-variant: #1f3858;
 }
 
 html,
@@ -18,12 +100,9 @@ body {
   background-color: var(--background-color);
   min-height: 100dvh;
   color: var(--text-color);
-  
-  background:
-    radial-gradient(circle at 20% 20%, rgba(255, 200, 200, 0.15), transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(200, 200, 255, 0.12), transparent 40%),
-    linear-gradient(180deg, #f5f5f5 0%, #eae7e4 100%);
-  
+
+  background: var(--fundo-pagina);
+
   h1,
   h2,
   h3,

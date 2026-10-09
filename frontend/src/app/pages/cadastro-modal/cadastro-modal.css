@@ -3,7 +3,7 @@
     height: 83vh;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(rgba(255, 177, 255, 0.082), rgba(230, 228, 228, 0.85));
+    background: var(--fundo-modal);
 }
 
 .cadastro-container {
@@ -27,13 +27,13 @@
 }
 
 .erro-msg {
-    color: #d32f2f;
+    color: var(--cor-erro);
     font-size: 0.85rem;
     margin-top: 8px;
 }
 
 .text-step {
-    color: #888;
+    color: var(--texto-apagado);
     top: 100%;
     width: 100%;
     text-align: center;

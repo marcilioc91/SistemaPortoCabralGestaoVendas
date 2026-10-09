@@ -38,7 +38,7 @@
 }
 
 .sem-categoria {
-  color: #888;
+  color: var(--texto-apagado);
   font-style: italic;
 }
 
@@ -51,7 +51,7 @@
 .qtd-input {
   width: 56px;
   padding: 4px 6px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--borda);
   border-radius: 4px;
   text-align: center;
   font-size: 0.95rem;
@@ -64,7 +64,7 @@
   gap: 16px;
   margin-top: 16px;
   padding: 12px 16px;
-  background: #f5f5f5;
+  background: var(--fundo-neutro);
   border-radius: 4px;
 }
 
@@ -76,7 +76,7 @@
 .total-valor {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #2e7d32;
+  color: var(--cor-sucesso);
 }
 
 .acoes-finalizar {
@@ -90,11 +90,11 @@
 }
 
 .estoque-baixo {
-  color: #f57c00;
+  color: var(--cor-alerta);
   font-weight: 600;
 }
 
 .estoque-zero {
-  color: #d32f2f;
+  color: var(--cor-erro);
   font-weight: 600;
 }

@@ -1,6 +1,6 @@
 .rec-texto {
   margin: 0 0 16px;
-  color: #555;
+  color: var(--texto-suave);
 }
 
 .rec-campo {
@@ -15,12 +15,12 @@
   padding: 10px 12px;
   border-radius: 8px;
   background: rgba(46, 125, 50, 0.08);
-  color: #2e7d32;
+  color: var(--cor-sucesso);
 }
 
 .rec-hint-erro,
 .rec-erro {
-  color: #d32f2f;
+  color: var(--cor-erro);
 }
 
 .rec-erro {
@@ -39,7 +39,7 @@
   width: 44px;
   height: 52px;
   padding: 0;
-  border: 1px solid #bdbdbd;
+  border: 1px solid var(--borda);
   border-radius: 8px;
   background: transparent;
   color: inherit;
@@ -51,7 +51,7 @@
 }
 
 .rec-digito:focus {
-  border: 2px solid var(--primary-color, #795548);
+  border: 2px solid var(--primary-color, #1f5fa8);
 }
 
 .rec-reenviar {

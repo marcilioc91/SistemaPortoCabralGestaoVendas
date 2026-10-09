@@ -22,22 +22,22 @@
 
 .sem-dados {
   text-align: center;
-  color: #888;
+  color: var(--texto-apagado);
   margin-top: 40px;
 }
 
 .estoque-baixo {
-  color: #f57c00;
+  color: var(--cor-alerta);
   font-weight: 600;
 }
 
 .estoque-zero {
-  color: #d32f2f;
+  color: var(--cor-erro);
   font-weight: 600;
 }
 
 .sem-categoria {
-  color: #888;
+  color: var(--texto-apagado);
   font-style: italic;
 }
 

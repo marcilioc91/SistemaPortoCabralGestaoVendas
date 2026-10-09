@@ -39,7 +39,7 @@
         <tr mat-row *matRowDef="let row; columns: colunas;"></tr>
     </table>
 
-    <p style="text-align:right; font-size: 1.1rem; font-weight: 700; color: #2e7d32; margin-bottom: 16px;">
+    <p style="text-align:right; font-size: 1.1rem; font-weight: 700; color: var(--cor-sucesso); margin-bottom: 16px;">
         Total: R$ {{ data.total | number:'1.2-2' }}
     </p>
 
@@ -64,13 +64,13 @@
         </mat-form-field>
 
         @if (valorPago < data.total) {
-            <p style="color: #f57c00; font-size: 0.85rem; margin: 0 0 8px">
+            <p style="color: var(--cor-alerta); font-size: 0.85rem; margin: 0 0 8px">
                 Saldo pendente: R$ {{ (data.total - valorPago) | number:'1.2-2' }}
             </p>
         }
 
         @if (valorPago > data.total) {
-        <p style="color: #388e3c; font-size: 0.85rem; margin: 0 0 8px">
+        <p style="color: var(--cor-sucesso); font-size: 0.85rem; margin: 0 0 8px">
             Troco: R$ {{ (valorPago - data.total) | number:'1.2-2' }}
         </p>
         }

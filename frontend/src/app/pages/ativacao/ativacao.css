@@ -4,7 +4,7 @@
 
     background:
         linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-        url('../../../assets/LoginArt.jpg');
+        url('../../../assets/background.jpg');
 
     background-size: cover;
     background-position: center;
@@ -20,7 +20,7 @@
     align-self: flex-start;
 
     backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--fundo-painel);
 }
 
 h2 {
@@ -41,13 +41,13 @@ h2 {
     padding: 10px 12px;
     border-radius: 8px;
     background: rgba(237, 108, 2, 0.1);
-    color: #b45309;
+    color: var(--cor-alerta);
 }
 
 .ativacao-codigo {
     margin: 0 0 20px;
     padding: 12px 16px;
-    border: 1px dashed var(--primary-color, #795548);
+    border: 1px dashed var(--primary-color, #1f5fa8);
     border-radius: 8px;
     text-align: center;
 }
@@ -110,6 +110,6 @@ textarea {
 
 .ativacao-erro {
     margin: 12px 0 0;
-    color: #d32f2f;
+    color: var(--cor-erro);
     font-size: 0.9rem;
 }

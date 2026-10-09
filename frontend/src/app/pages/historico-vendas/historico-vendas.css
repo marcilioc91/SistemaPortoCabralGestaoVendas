@@ -26,7 +26,7 @@
   gap: 8px;
   justify-content: center;
   margin-top: 48px;
-  color: #888;
+  color: var(--texto-apagado);
   font-size: 1rem;
 }
 
@@ -36,7 +36,7 @@
   align-items: center;
   padding: 8px 0 0;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--texto-suave);
 }
 
 .rodape-pagamento {
@@ -51,22 +51,22 @@
 
 .sem-dados {
   text-align: center;
-  color: #888;
+  color: var(--texto-apagado);
   margin-top: 40px;
 }
 
 .total {
-  color: #0052a5;
+  color: var(--cor-info);
   font-weight: 600;
 }
 
 .pendente {
-  color: #f57c00;
+  color: var(--cor-alerta);
   font-weight: 600;
 }
 
 .pago {
-  color: #2e7d32;
+  color: var(--cor-sucesso);
   font-weight: 600;
 }
 

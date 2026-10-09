@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
+import { TemaService } from '../../services/tema.service';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +17,7 @@ export class Home {
   nomeUsuario: string = '';
   isAdmin: boolean = false;
 
-  constructor(private router: Router, private auth: AuthService) {
+  constructor(private router: Router, private auth: AuthService, protected tema: TemaService) {
     const usuario = this.auth.getUsuarioLogado();
     this.nomeUsuario = usuario?.pessoa?.nome ?? usuario?.usuarioLogin ?? '';
     this.isAdmin = this.auth.isAdmin();

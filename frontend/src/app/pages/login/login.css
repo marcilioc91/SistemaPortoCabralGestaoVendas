@@ -4,7 +4,7 @@
 
     background:
         linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-        url('../../../assets/LoginArt.jpg');
+        url('../../../assets/background.jpg');
 
     background-size: cover;
     background-position: center;
@@ -20,7 +20,7 @@
     text-align: center;
 
     backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--fundo-painel);
 }
 
 .login-form {
@@ -35,7 +35,7 @@
 }
 
 .cadastro-link {
-    color: #a05c3a;
+    color: var(--primary-color);
 }
 
 .esqueci-link {

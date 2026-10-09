@@ -26,7 +26,7 @@
 
 .sem-dados {
   text-align: center;
-  color: #888;
+  color: var(--texto-apagado);
   margin-top: 40px;
 }
 
