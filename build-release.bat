@@ -12,6 +12,26 @@ set FRONTEND_DIR=%ROOT%frontend
 set BACKEND_DIR=%ROOT%backend
 set STATIC_DIR=%BACKEND_DIR%\src\main\resources\static
 set ANGULAR_DIST=%FRONTEND_DIR%\dist\porto-cabral-frontend\browser
+set EMAIL_PADRAO=%BACKEND_DIR%\src\main\resources\email-padrao.properties
+
+:: ---- 0. Conta de e-mail padrao (vai embutida no JAR, fica fora do Git) ----
+if not exist "%EMAIL_PADRAO%" (
+    echo.
+    echo ERRO: Arquivo nao encontrado: %EMAIL_PADRAO%
+    echo Copie backend\email-padrao.exemplo.properties para esse caminho e preencha login e chave SMTP do Brevo.
+    echo Sem ele, a recuperacao de senha por e-mail nao funciona no sistema instalado.
+    pause
+    exit /b 1
+)
+for %%P in (spring.mail.username spring.mail.password app.mail.remetente) do (
+    findstr /r /c:"^%%P=..*" "%EMAIL_PADRAO%" > nul
+    if !errorlevel! neq 0 (
+        echo.
+        echo ERRO: %%P vazio em %EMAIL_PADRAO%
+        pause
+        exit /b 1
+    )
+)
 
 :: ---- 1. Build do Frontend Angular ----
 echo.

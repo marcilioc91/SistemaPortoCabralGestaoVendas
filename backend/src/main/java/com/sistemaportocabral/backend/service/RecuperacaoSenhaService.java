@@ -45,7 +45,15 @@ public class RecuperacaoSenhaService {
     @Autowired
     private JavaMailSender mailSender;
 
+    /** Login no servidor SMTP (no Brevo, diferente do e-mail do remetente). */
     @Value("${spring.mail.username:}")
+    private String usuarioSmtp;
+
+    @Value("${spring.mail.password:}")
+    private String senhaSmtp;
+
+    /** E-mail exibido como remetente; sem ele, usa o próprio login SMTP (ex.: Gmail). */
+    @Value("${app.mail.remetente:${spring.mail.username:}}")
     private String remetente;
 
     @Value("${app.mail.remetente-nome:Porto Cabral}")
@@ -54,7 +62,7 @@ public class RecuperacaoSenhaService {
     /** Gera um código e envia para o e-mail cadastrado. Usuário inexistente ou sem e-mail: IllegalArgumentException. */
     @Transactional
     public void solicitar(String identificador) {
-        if (remetente == null || remetente.isBlank()) {
+        if (vazio(usuarioSmtp) || vazio(senhaSmtp) || vazio(remetente)) {
             throw new IllegalStateException("O envio de e-mail não está configurado. Procure o administrador do sistema.");
         }
 
@@ -170,6 +178,10 @@ public class RecuperacaoSenhaService {
             log.error("Falha ao enviar e-mail de recuperação de senha para o usuário {}", usuario.getUsuarioLogin(), e);
             throw new IllegalStateException("Não foi possível enviar o e-mail. Tente novamente mais tarde.");
         }
+    }
+
+    private static boolean vazio(String valor) {
+        return valor == null || valor.isBlank();
     }
 
     private String nomeDe(Usuario usuario) {

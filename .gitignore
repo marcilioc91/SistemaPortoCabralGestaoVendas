@@ -85,6 +85,8 @@ Thumbs.db
 # ARQUIVOS DO PROJETO IGNORADOS
 # ==========================================
 backend/src/main/resources/*
+# Conta de e-mail padrao embutida no JAR (contem a senha de app; modelo: backend/email-padrao.exemplo.properties)
+backend/src/main/resources/email-padrao.properties
 !backend/src/main/resources/db/
 !backend/src/main/resources/application.properties
 *.zip

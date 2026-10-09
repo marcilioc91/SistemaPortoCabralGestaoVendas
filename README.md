@@ -233,7 +233,7 @@ Regras da ferramenta (`MigracaoMssql.java`): o destino precisa estar vazio; tudo
 
 ### Configuração local (fora do Git)
 
-Credenciais e ajustes por máquina ficam em `config.properties`, na pasta de dados (mesma pasta do banco), carregado automaticamente se existir.
+Ajustes por máquina ficam em `config.properties`, na pasta de dados (mesma pasta do banco), carregado automaticamente se existir. É opcional: o sistema funciona sem ele.
 Modelo com instruções: [`backend/config.exemplo.properties`](backend/config.exemplo.properties). Outro caminho: variável de ambiente `APP_CONFIG_PATH`.
 
 ### Recuperação de senha por e-mail
@@ -244,7 +244,12 @@ Na tela de login, **"Esqueci minha senha"** → informar usuário ou e-mail → 
 - Máximo de **5 tentativas** por código, somando a validação e a redefinição; novo envio só após 60 segundos; pedir um novo código invalida o anterior.
 - Usuário/e-mail não cadastrado ou usuário sem e-mail: a tela mostra o erro e não avança.
 - Pedido e redefinição ficam registrados na auditoria.
-- Envio via **Gmail** (`smtp.gmail.com:587`, STARTTLS) com *senha de app*: preencher `spring.mail.username` e `spring.mail.password` no `config.properties`. Sem essas credenciais, a tela informa que o envio não está configurado.
+- Envio via **Brevo** (`smtp-relay.brevo.com:587`, STARTTLS, plano gratuito com cerca de 300 e-mails/dia), com remetente **portocabral.sistemas@gmail.com**. A conta de envio já vai embutida no JAR: o cliente não configura nada.
+  - Login SMTP, chave SMTP e remetente ficam em `backend/src/main/resources/email-padrao.properties` (fora do Git; modelo e passo a passo em [`backend/email-padrao.exemplo.properties`](backend/email-padrao.exemplo.properties)). O `build-release.bat` não gera o instalador sem esse arquivo preenchido.
+  - A chave SMTP só permite enviar: não dá acesso à caixa do Gmail. Se vazar, basta revogá-la no Brevo e gerar outra.
+  - Como o remetente é `@gmail.com` enviado por outro serviço, o e-mail pode cair no spam; com domínio próprio autenticado no Brevo isso deixa de acontecer.
+  - Para um cliente usar outra conta (Brevo ou Gmail próprio), basta informá-la no `config.properties`, que prevalece sobre a conta padrão.
+  - Sem credenciais, a tela informa que o envio não está configurado.
 - Requer internet na máquina no momento do envio.
 
 ### Licença de uso (ativação)
