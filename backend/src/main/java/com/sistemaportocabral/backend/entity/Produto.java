@@ -21,4 +21,8 @@ public class Produto {
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
+
+    /** Só muda pelos endpoints de imagem; null = produto sem imagem */
+    @Column(insertable = false, updatable = false)
+    private Long imagemVersao;
 }

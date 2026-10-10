@@ -37,12 +37,6 @@
   max-width: 100%;
 }
 
-.sem-categoria {
-  color: var(--texto-apagado);
-  font-style: italic;
-}
-
-.produtos-tabela,
 .carrinho-tabela {
   width: 100%;
 }
@@ -97,4 +91,138 @@
 .estoque-zero {
   color: var(--cor-erro);
   font-weight: 600;
+}
+
+/* Catalogo de produtos em grade, separado em secoes por categoria */
+.secao-categoria + .secao-categoria {
+  margin-top: 28px;
+}
+
+.secao-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--borda-destaque);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.secao-quantidade {
+  min-width: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: var(--fundo-destaque);
+  color: var(--texto-medio);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: center;
+}
+
+.aviso-cliente {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin: 0 0 16px;
+  border-radius: 8px;
+  background: var(--fundo-destaque);
+  color: var(--texto-medio);
+  font-weight: 500;
+}
+
+.catalogo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.produto-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--fundo-painel);
+  transition: box-shadow 0.2s, transform 0.2s, opacity 0.2s;
+}
+
+.produto-card:not(.indisponivel):hover {
+  box-shadow: 0 4px 14px var(--sombra-hover);
+  transform: translateY(-2px);
+}
+
+.produto-card.indisponivel {
+  opacity: 0.55;
+}
+
+.produto-card.indisponivel .produto-imagem {
+  filter: grayscale(1);
+}
+
+.produto-imagem {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fundo-neutro);
+}
+
+/* Posição absoluta: o quadro fica sempre 4:3, qualquer que seja a resolução da imagem */
+.produto-imagem img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.produto-imagem mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: var(--texto-apagado);
+}
+
+.produto-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 4px;
+  flex: 1;
+}
+
+.produto-nome {
+  font-weight: 600;
+  color: var(--texto-forte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.produto-valores {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+}
+
+.produto-preco {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--cor-sucesso);
+}
+
+.produto-estoque {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.produto-adicionar {
+  margin: 8px 12px 12px;
 }

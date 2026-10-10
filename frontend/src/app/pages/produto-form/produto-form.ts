@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,22 +15,35 @@ import { Categoria } from '../../models/categoria';
 import { Produto } from '../../models/produto';
 import { CategoriaService } from '../../services/categoria.service';
 import { ProdutoService } from '../../services/produto.service';
+import { reduzirImagem } from '../../utils/utils';
+
+/** imagem: undefined = não mexeu, null = remover, Blob = nova imagem */
+interface ResultadoFormulario {
+  produto: Produto;
+  imagem?: Blob | null;
+}
 
 // ── Diálogo de novo/editar produto ────────────────────────────────────────────
 @Component({
   selector: 'app-produto-form-dialog',
   standalone: true,
-  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule],
+  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule],
   templateUrl: './produto-form-dialog.html',
+  styleUrl: './produto-form.css',
 })
-export class ProdutoFormDialog {
+export class ProdutoFormDialog implements OnDestroy {
   dados: Produto;
   categoriaId: number | null;
   modoEdicao: boolean;
   erro = '';
+  imagemPreview: string | null;
+  private imagemNova?: Blob | null;
+  private urlTemporaria: string | null = null;
 
   constructor(
     private dialogRef: MatDialogRef<ProdutoFormDialog>,
+    private produtoService: ProdutoService,
+    private cdr: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: { produto?: Produto; categorias: Categoria[] } | null
   ) {
     this.modoEdicao = !!data?.produto;
@@ -38,6 +51,40 @@ export class ProdutoFormDialog {
       ? { ...data.produto }
       : { nome: '', preco: 0, preco_custo: 0, estoque: 0 };
     this.categoriaId = this.dados.categoria?.id ?? null;
+    this.imagemPreview = this.produtoService.urlImagem(this.dados);
+  }
+
+  async selecionarImagem(input: HTMLInputElement) {
+    const arquivo = input.files?.[0];
+    input.value = '';
+    if (!arquivo) return;
+    if (!arquivo.type.startsWith('image/')) {
+      this.erro = 'Escolha um arquivo de imagem (JPG, PNG...).';
+      return;
+    }
+    try {
+      this.imagemNova = await reduzirImagem(arquivo);
+      this.trocarPreview(URL.createObjectURL(this.imagemNova));
+      this.erro = '';
+    } catch {
+      this.erro = 'Não foi possível ler esta imagem.';
+    }
+    this.cdr.detectChanges();
+  }
+
+  removerImagem() {
+    this.imagemNova = null;
+    this.trocarPreview(null);
+  }
+
+  private trocarPreview(url: string | null) {
+    if (this.urlTemporaria) URL.revokeObjectURL(this.urlTemporaria);
+    this.urlTemporaria = url;
+    this.imagemPreview = url;
+  }
+
+  ngOnDestroy() {
+    if (this.urlTemporaria) URL.revokeObjectURL(this.urlTemporaria);
   }
 
   confirmar() {
@@ -46,7 +93,8 @@ export class ProdutoFormDialog {
       return;
     }
     const categoria = this.data?.categorias.find(c => c.id === this.categoriaId) ?? null;
-    this.dialogRef.close({ ...this.dados, categoria });
+    const resultado: ResultadoFormulario = { produto: { ...this.dados, categoria }, imagem: this.imagemNova };
+    this.dialogRef.close(resultado);
   }
 
   fechar() { this.dialogRef.close(); }
@@ -71,10 +119,10 @@ export class ProdutoFormDialog {
 export class ProdutoForm implements OnInit {
   produtos: Produto[] = [];
   categorias: Categoria[] = [];
-  colunas = ['semEstoque', 'nome', 'categoria', 'preco', 'estoque', 'acoes'];
+  colunas = ['semEstoque', 'imagem', 'nome', 'categoria', 'preco', 'estoque', 'acoes'];
 
   constructor(
-    private produtoService: ProdutoService,
+    public produtoService: ProdutoService,
     private categoriaService: CategoriaService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -101,13 +149,10 @@ export class ProdutoForm implements OnInit {
 
   abrirFormulario() {
     const ref = this.dialog.open(ProdutoFormDialog, { width: '400px', data: { categorias: this.categorias } });
-    ref.afterClosed().subscribe((dados: Produto | undefined) => {
-      if (!dados) return;
-      this.produtoService.salvar(dados).subscribe({
-        next: () => {
-          this.snackBar.open('Produto cadastrado com sucesso!', 'Fechar', { duration: 3000 });
-          this.carregar();
-        },
+    ref.afterClosed().subscribe((resultado: ResultadoFormulario | undefined) => {
+      if (!resultado) return;
+      this.produtoService.salvar(resultado.produto).subscribe({
+        next: salvo => this.gravarImagem(salvo.id!, resultado.imagem, 'Produto cadastrado com sucesso!'),
         error: () => this.snackBar.open('Erro ao cadastrar produto.', 'Fechar', { duration: 3000 })
       });
     });
@@ -115,15 +160,30 @@ export class ProdutoForm implements OnInit {
 
   abrirEdicao(produto: Produto) {
     const ref = this.dialog.open(ProdutoFormDialog, { width: '400px', data: { produto, categorias: this.categorias } });
-    ref.afterClosed().subscribe((dados: Produto | undefined) => {
-      if (!dados || !dados.id) return;
-      this.produtoService.atualizar(dados.id, dados).subscribe({
-        next: () => {
-          this.snackBar.open('Produto atualizado!', 'Fechar', { duration: 3000 });
-          this.carregar();
-        },
+    ref.afterClosed().subscribe((resultado: ResultadoFormulario | undefined) => {
+      const id = resultado?.produto.id;
+      if (!resultado || !id) return;
+      this.produtoService.atualizar(id, resultado.produto).subscribe({
+        next: () => this.gravarImagem(id, resultado.imagem, 'Produto atualizado!'),
         error: () => this.snackBar.open('Erro ao atualizar produto.', 'Fechar', { duration: 3000 })
       });
+    });
+  }
+
+  /** Depois de salvar os dados do produto, envia ou remove a imagem (se ela mudou) */
+  private gravarImagem(id: number, imagem: Blob | null | undefined, mensagem: string) {
+    const concluir = (msg: string) => {
+      this.snackBar.open(msg, 'Fechar', { duration: 3000 });
+      this.carregar();
+    };
+    if (imagem === undefined) {
+      concluir(mensagem);
+      return;
+    }
+    const requisicao = imagem ? this.produtoService.salvarImagem(id, imagem) : this.produtoService.removerImagem(id);
+    requisicao.subscribe({
+      next: () => concluir(mensagem),
+      error: () => concluir('Produto salvo, mas houve erro ao gravar a imagem.')
     });
   }
 

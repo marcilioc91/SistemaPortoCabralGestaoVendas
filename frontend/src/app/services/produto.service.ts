@@ -34,4 +34,19 @@ export class ProdutoService {
   excluir(id: number) {
     return this.http.delete(`${this.api}/${id}`, { headers: this.headers() });
   }
+
+  /** URL da imagem do produto (null se não tiver); a versão evita mostrar a imagem antiga do cache */
+  urlImagem(produto: Produto): string | null {
+    return produto.id && produto.imagemVersao ? `${this.api}/${produto.id}/imagem?v=${produto.imagemVersao}` : null;
+  }
+
+  salvarImagem(id: number, imagem: Blob) {
+    const form = new FormData();
+    form.append('arquivo', imagem, 'imagem.jpg');
+    return this.http.put(`${this.api}/${id}/imagem`, form, { headers: this.headers() });
+  }
+
+  removerImagem(id: number) {
+    return this.http.delete(`${this.api}/${id}/imagem`, { headers: this.headers() });
+  }
 }

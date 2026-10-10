@@ -132,3 +132,50 @@ body {
   background-color: var(--secondary-color) !important;
   color: #fff !important;
 }
+
+/* Tela de carregamento da abertura (index.html e App), enquanto o backend inicia */
+.tela-inicial {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--fundo-pagina);
+  color: var(--texto-medio);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+}
+
+.tela-inicial p {
+  margin: 0;
+}
+
+.tela-inicial-titulo {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.tela-inicial-dica {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.tela-inicial-spinner {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  border: 4px solid var(--borda);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: tela-inicial-girar 0.9s linear infinite;
+}
+
+@keyframes tela-inicial-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}

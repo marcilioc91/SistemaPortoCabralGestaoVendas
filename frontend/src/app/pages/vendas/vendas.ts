@@ -122,7 +122,6 @@ export class VendaConfirmacaoDialog implements OnInit {
     MatIconModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatTableModule,
     MatInputModule,
     MatAutocompleteModule,
     MatDialogModule,
@@ -143,11 +142,10 @@ export class Vendas implements OnInit {
   clienteSearchText = '';
   carregando = true;
 
-  colunasProdutos = ['nome', 'categoria', 'preco', 'estoque', 'acoes'];
   colunasCarrinho = ['produto', 'preco', 'quantidade', 'subtotal', 'acoes'];
 
   constructor(
-    private produtoService: ProdutoService,
+    public produtoService: ProdutoService,
     private vendaService: VendaService,
     private clienteService: ClienteService,
     private auth: AuthService,
@@ -179,6 +177,12 @@ export class Vendas implements OnInit {
     });
   }
 
+  /** "Todas": uma seção por categoria; categoria escolhida no filtro: só a seção dela */
+  secoesVisiveis(): GrupoCategoria[] {
+    if (!this.grupoSelecionado) return [];
+    return this.grupoSelecionado === this.grupos[0] ? this.grupos.slice(1) : [this.grupoSelecionado];
+  }
+
   private agruparPorCategoria(produtos: Produto[]): GrupoCategoria[] {
     const mapa = new Map<number, GrupoCategoria>();
     const semCategoria: Produto[] = [];
@@ -201,14 +205,21 @@ export class Vendas implements OnInit {
     this.filteredClientes = this.clientes.filter(c =>
       c.pessoa.nome.toLowerCase().includes(filtro)
     );
-    if (!valor) this.clienteSelecionado = null;
+    // Editou o nome depois de escolher: o cliente deixa de valer e os produtos voltam a ficar bloqueados
+    if (this.clienteSelecionado && valor !== this.clienteSelecionado.pessoa.nome) this.clienteSelecionado = null;
   }
 
   onClienteSelecionado(event: MatAutocompleteSelectedEvent) {
     this.clienteSelecionado = this.clientes.find(c => c.pessoa.nome === event.option.value) ?? null;
   }
 
+  /** Produtos só ficam disponíveis com um cliente escolhido e se ainda houver estoque */
+  podeAdicionar(produto: Produto): boolean {
+    return !!this.clienteSelecionado && this.getEstoqueDisponivel(produto) > 0;
+  }
+
   adicionar(produto: Produto) {
+    if (!this.podeAdicionar(produto)) return;
     const item = this.carrinho.find(i => i.produto.id === produto.id);
     if (item) {
       item.quantidade++;

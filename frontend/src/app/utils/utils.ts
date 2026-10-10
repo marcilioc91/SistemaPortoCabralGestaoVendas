@@ -32,3 +32,34 @@ export function cpfValido(cpf: string): boolean {
 export function emailValido(email: string): boolean {
   return /^[\w+.%-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email);
 }
+
+/** Formato padrão das imagens de produto (4:3, o mesmo dos cartões do catálogo) */
+export const IMAGEM_PRODUTO_LARGURA = 800;
+export const IMAGEM_PRODUTO_ALTURA = 600;
+
+/**
+ * Converte qualquer imagem para o tamanho padrão: preenche todo o quadro e corta o que sobrar,
+ * mantendo o centro; grava em JPEG (fundo branco onde era transparente)
+ */
+export async function reduzirImagem(
+  arquivo: File,
+  largura = IMAGEM_PRODUTO_LARGURA,
+  altura = IMAGEM_PRODUTO_ALTURA
+): Promise<Blob> {
+  const bitmap = await createImageBitmap(arquivo);
+  const escala = Math.max(largura / bitmap.width, altura / bitmap.height);
+  const larguraFinal = bitmap.width * escala;
+  const alturaFinal = bitmap.height * escala;
+  const canvas = document.createElement('canvas');
+  canvas.width = largura;
+  canvas.height = altura;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, largura, altura);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, (largura - larguraFinal) / 2, (altura - alturaFinal) / 2, larguraFinal, alturaFinal);
+  bitmap.close();
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(b => (b ? resolve(b) : reject(new Error('Falha ao converter a imagem.'))), 'image/jpeg', 0.85)
+  );
+}

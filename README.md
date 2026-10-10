@@ -214,25 +214,6 @@ A biblioteca nativa do Firebird vem como dependência Maven (`jaybird-firebird-e
 - **Usuário padrão:** toda instalação já vem com o administrador **`admin` / senha `admin`** (script `V3__usuario_admin_padrao.sql`). No primeiro login o sistema **obriga a troca da senha** antes de liberar o acesso (coluna `USUARIO.TROCAR_SENHA`, endpoint `POST /auth/trocar-senha`). Novos cadastros feitos pela tela de login entram como `OPERADOR`.
 - **Backup:** pare o sistema e copie o arquivo `PORTOCABRAL.FDB` da pasta de dados.
 
-### Migração de um banco antigo (SQL Server, versões 1.x)
-
-Copia clientes, produtos, categorias, usuários (com as mesmas senhas), vendas e auditoria para um banco Firebird novo, preservando os IDs.
-
-1. **Na máquina antiga**, gere o backup (SSMS ou `sqlcmd`):
-   ```sql
-   BACKUP DATABASE PortoCabral TO DISK = 'C:\Temp\PortoCabral.bak' WITH COPY_ONLY, INIT
-   ```
-2. **Na máquina de desenvolvimento**, restaure com outro nome (veja os nomes lógicos com `RESTORE FILELISTONLY FROM DISK = '...'`):
-   ```sql
-   RESTORE DATABASE PortoCabral_Origem FROM DISK = 'C:\Temp\PortoCabral.bak'
-   WITH MOVE '<nome_logico_dados>' TO 'C:\Temp\PortoCabral_Origem.mdf',
-        MOVE '<nome_logico_log>'   TO 'C:\Temp\PortoCabral_Origem_log.ldf'
-   ```
-3. Compile o backend (`mvnw.cmd package -DskipTests`) e rode **`migrar-mssql.bat PortoCabral_Origem`**. O banco é gerado em `migracao\PORTOCABRAL.FDB` (pasta ignorada pelo Git).
-4. Copie o `PORTOCABRAL.FDB` para `C:\PortoCabral\dados\` na máquina de destino, **com o sistema fechado**.
-
-Regras da ferramenta (`MigracaoMssql.java`): o destino precisa estar vazio; tudo roda em uma transação (se falhar, nada é gravado); as contagens são conferidas tabela a tabela; bancos sem `CATEGORIA` (versão 1.0.1) também são aceitos; CPF vazio vira `NULL`. Se nenhum usuário ADMIN existir na origem, é criado o `admin`/`admin` com troca obrigatória.
-
 ### Configuração local (fora do Git)
 
 Ajustes por máquina ficam em `config.properties`, na pasta de dados (mesma pasta do banco), carregado automaticamente se existir. É opcional: o sistema funciona sem ele.

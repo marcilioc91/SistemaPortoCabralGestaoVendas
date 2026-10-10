@@ -39,50 +39,55 @@
         </mat-select>
       </mat-form-field>
 
-      <table mat-table [dataSource]="grupoSelecionado?.produtos ?? []" class="mat-elevation-z2 produtos-tabela">
+      @if (!clienteSelecionado) {
+      <p class="aviso-cliente">
+        <mat-icon>person_search</mat-icon>
+        Selecione um cliente para liberar os produtos.
+      </p>
+      }
 
-        <ng-container matColumnDef="nome">
-          <th mat-header-cell *matHeaderCellDef>Produto</th>
-          <td mat-cell *matCellDef="let p">{{ p.nome }}</td>
-        </ng-container>
+      @for (secao of secoesVisiveis(); track secao.nome) {
+      <section class="secao-categoria">
+        <h4 class="secao-titulo">
+          {{ secao.nome }}
+          <span class="secao-quantidade">{{ secao.produtos.length }}</span>
+        </h4>
 
-        <ng-container matColumnDef="categoria">
-          <th mat-header-cell *matHeaderCellDef>Categoria</th>
-          <td mat-cell *matCellDef="let p">
-            @if (p.categoria) { {{ p.categoria.nome }} } @else { <span class="sem-categoria">Sem categoria</span> }
-          </td>
-        </ng-container>
+        <div class="catalogo">
+          @for (p of secao.produtos; track p.id) {
+          <div class="produto-card" [class.indisponivel]="!podeAdicionar(p)">
+            <div class="produto-imagem">
+              @if (produtoService.urlImagem(p); as url) {
+              <img [src]="url" [alt]="p.nome" loading="lazy">
+              } @else {
+              <mat-icon>inventory_2</mat-icon>
+              }
+            </div>
 
-        <ng-container matColumnDef="preco">
-          <th mat-header-cell *matHeaderCellDef>Preço</th>
-          <td mat-cell *matCellDef="let p">R$ {{ p.preco | number:'1.2-2' }}</td>
-        </ng-container>
+            <div class="produto-info">
+              <span class="produto-nome" [title]="p.nome">{{ p.nome }}</span>
+              <div class="produto-valores">
+                <span class="produto-preco">R$ {{ p.preco | number:'1.2-2' }}</span>
+                <span class="produto-estoque"
+                  [class.estoque-baixo]="getEstoqueDisponivel(p) <= 5"
+                  [class.estoque-zero]="getEstoqueDisponivel(p) <= 0">
+                  {{ getEstoqueDisponivel(p) <= 0 ? 'Sem estoque' : getEstoqueDisponivel(p) + ' un.' }}
+                </span>
+              </div>
+            </div>
 
-        <ng-container matColumnDef="estoque">
-          <th mat-header-cell *matHeaderCellDef>Estoque</th>
-          <td mat-cell *matCellDef="let p"
-          [class.estoque-baixo]="getEstoqueDisponivel(p) <= 5"
-          [class.estoque-zero]="getEstoqueDisponivel(p) === 0">
-            {{ getEstoqueDisponivel(p) }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="acoes">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let p">
-            <button
-            mat-icon-button color="primary"
-            (click)="adicionar(p)"
-            [disabled]="getEstoqueDisponivel(p) <= 0"
-            title="Adicionar ao carrinho">
+            <button mat-flat-button color="primary" class="produto-adicionar"
+              (click)="adicionar(p)"
+              [disabled]="!podeAdicionar(p)"
+              [title]="clienteSelecionado ? 'Adicionar ao carrinho' : 'Selecione um cliente primeiro'">
               <mat-icon>add_shopping_cart</mat-icon>
+              Adicionar
             </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="colunasProdutos"></tr>
-        <tr mat-row *matRowDef="let row; columns: colunasProdutos;"></tr>
-      </table>
+          </div>
+          }
+        </div>
+      </section>
+      }
       }
     </div>
 

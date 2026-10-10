@@ -1,5 +1,27 @@
 <h2 style="padding: 24px 24px 0; text-align: center;">{{ modoEdicao ? 'Editar Produto' : 'Novo Produto' }}</h2>
 <div style="padding: 0 24px 24px; display: flex; flex-direction: column; gap: 4px; min-width: 320px;">
+    <div class="imagem-campo">
+        <div class="imagem-preview">
+            @if (imagemPreview) {
+            <img [src]="imagemPreview" alt="Imagem do produto">
+            } @else {
+            <mat-icon>image</mat-icon>
+            }
+        </div>
+        <div class="imagem-botoes">
+            <input #arquivoImagem type="file" accept="image/*" hidden (change)="selecionarImagem(arquivoImagem)">
+            <button mat-stroked-button type="button" (click)="arquivoImagem.click()">
+                <mat-icon>photo_camera</mat-icon>
+                {{ imagemPreview ? 'Trocar imagem' : 'Escolher imagem' }}
+            </button>
+            @if (imagemPreview) {
+            <button mat-button color="warn" type="button" (click)="removerImagem()">
+                <mat-icon>delete</mat-icon>
+                Remover
+            </button>
+            }
+        </div>
+    </div>
     <mat-form-field>
         <mat-label>Nome</mat-label>
         <input matInput [(ngModel)]="dados.nome" name="nome" (ngModelChange)="dados.nome = $event.toUpperCase()">

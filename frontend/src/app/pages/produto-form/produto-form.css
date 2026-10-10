@@ -44,3 +44,56 @@
 .uppercase {
   text-transform: uppercase;
 }
+
+/* Imagem do produto: miniatura na tabela e campo no formulario */
+.miniatura {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.miniatura-vazia {
+  color: var(--texto-apagado);
+}
+
+.imagem-campo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.imagem-preview {
+  width: 128px;
+  height: 96px;
+  flex-shrink: 0;
+  border: 1px dashed var(--borda);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--fundo-neutro);
+}
+
+.imagem-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imagem-preview mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: var(--texto-apagado);
+}
+
+.imagem-botoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}

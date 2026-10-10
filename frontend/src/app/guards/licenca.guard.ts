@@ -5,11 +5,12 @@ import { CanActivateFn, Router } from '@angular/router';
 import { catchError, map, of, retry, throwError, timer } from 'rxjs';
 import { LicencaService } from '../services/licenca.service';
 
-/** Consulta a licença; enquanto o backend ainda está subindo (sem resposta), tenta de novo por até 30s */
+/** Consulta a licença; enquanto o backend ainda está subindo (sem resposta), tenta de novo por até 90s
+ *  (em máquinas lentas o Java pode levar mais de 30s para iniciar) */
 function consultarStatus(licenca: LicencaService) {
   return licenca.status().pipe(
     retry({
-      count: 30,
+      count: 90,
       delay: (err: HttpErrorResponse) => (err.status === 0 ? timer(1000) : throwError(() => err)),
     })
   );
