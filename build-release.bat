@@ -100,8 +100,19 @@ echo.
 echo [5/5] Gerando executável do Electron...
 cd /d "%FRONTEND_DIR%"
 
+:: Pasta de saida com a versao do package.json, pontos trocados por hifens (ex.: electron\PortoCabral1-3-1)
+set VERSAO=
+for /f "usebackq delims=" %%V in (`node -p "require('./package.json').version.replace(/\./g, '-')"`) do set VERSAO=%%V
+if "%VERSAO%"=="" (
+    echo ERRO: Nao foi possivel ler a versao em frontend\package.json.
+    pause
+    exit /b 1
+)
+set SAIDA_DIR=PortoCabral%VERSAO%
+
 :: Certifique-se de que o electron-builder está instalado no projeto electron
-call npm run dist
+:: O caminho de saida e relativo a pasta frontend
+call npm run dist -- -c.directories.output=../electron/%SAIDA_DIR%
 if %errorlevel% neq 0 (
     echo ERRO: Falha ao gerar o executável do Electron.
     pause
@@ -114,6 +125,6 @@ echo ============================================
 echo   BUILD CONCLUIDO COM SUCESSO!
 echo ============================================
 echo.
-echo Executável disponibilizado na pasta: %ELECTRON_DIR%\dist
+echo Executável disponibilizado na pasta: %ELECTRON_DIR%\%SAIDA_DIR%
 echo.
 pause
